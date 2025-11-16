@@ -272,7 +272,6 @@ public partial class CompositionPage : UserControl
         {
             if (_ellipses.Count == 0)
                 UpdateRects();
-            
             foreach(var e in _ellipses)
                 drawingContext.DrawEllipse(e.brush, null, e.center, e.size, e.size);
         }

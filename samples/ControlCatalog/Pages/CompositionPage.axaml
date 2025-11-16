@@ -2,6 +2,27 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:pages="using:ControlCatalog.Pages"
              x:Class="ControlCatalog.Pages.CompositionPage">
+  <UserControl.Resources>
+    <ControlTheme x:Key="{x:Type pages:Marquee}" TargetType="pages:Marquee">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border
+            Background="{TemplateBinding Background}"
+            BackgroundSizing="{TemplateBinding BackgroundSizing}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            BorderThickness="{TemplateBinding BorderThickness}">
+            <Grid>
+              <ContentPresenter
+                Name="PART_ContentPresenter"
+                Content="{TemplateBinding Content}"
+                ContentTemplate="{TemplateBinding ContentTemplate}" />
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
+  </UserControl.Resources>
   <TabControl>
     <TabItem Header="Implicit animations">
       <StackPanel>
@@ -56,6 +77,63 @@
                     >Precise dirty rects</CheckBox>
         </StackPanel>
         <Control x:Name="CustomVisualHost" />
+      </DockPanel>
+    </TabItem>
+    <TabItem Header="Marquee">
+      <DockPanel Margin="8">
+        <!-- 控制面板 -->
+        <StackPanel DockPanel.Dock="Top" Spacing="8">
+          <TextBlock Text="Content(Text):"/>
+          <TextBox x:Name="content" Text="Avalonia Marquee" />
+          
+          <TextBlock Text="Speed:"/>
+          <Slider x:Name="speed" Minimum="20" Maximum="500" Value="1" TickFrequency="20" />
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <StackPanel>
+                <TextBlock Text="Direction:"/>
+                <ComboBox x:Name="direction" SelectedItem="Right">
+                  <ComboBoxItem>Left</ComboBoxItem>
+                  <ComboBoxItem>Right</ComboBoxItem>
+                  <ComboBoxItem>Up</ComboBoxItem>
+                  <ComboBoxItem>Down</ComboBoxItem>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Horizontal:"/>
+                <ComboBox x:Name="horizontal" SelectedItem="Center">
+                  <ComboBoxItem>Left</ComboBoxItem>
+                  <ComboBoxItem>Center</ComboBoxItem>
+                  <ComboBoxItem>Right</ComboBoxItem>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Vertical:"/>
+                <ComboBox x:Name="vertical" SelectedItem="Center">
+                  <ComboBoxItem>Top</ComboBoxItem>
+                  <ComboBoxItem>Center</ComboBoxItem>
+                  <ComboBoxItem>Bottom</ComboBoxItem>
+                </ComboBox>
+              </StackPanel>
+              <StackPanel VerticalAlignment="Bottom">
+                <CheckBox x:Name="running" IsChecked="False">Run</CheckBox>
+              </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Marquee 控件主体 -->
+        <Border Margin="0,12,0,0" BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Height="100">
+          <pages:Marquee
+              HorizontalContentAlignment="{Binding #horizontal.SelectedItem,Mode=OneWay}"
+              VerticalContentAlignment="{Binding #vertical.SelectedItem,Mode=OneWay}"
+              Speed="{Binding #speed.Value,Mode=OneWay}"
+              Background="{DynamicResource SemiBlue1}"
+              Direction="{Binding #direction.SelectedItem,Mode=OneWay}"
+              
+              IsRunning="{Binding #running.IsChecked}" >
+              <Button Content="{Binding #content.Text}"/>
+          </pages:Marquee>
+        </Border>
       </DockPanel>
     </TabItem>
   </TabControl>
