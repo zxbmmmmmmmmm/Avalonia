@@ -126,7 +126,7 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
         {
             var current = _color;
             var server = animation.CreateInstance(_resource.TryGetForCompositor(animation.Compositor)!, finalValue);
-            PendingAnimations[ServerCompositionSolidColorVisual.s_IdOfColorProperty] = server;
+            PendingAnimations[ServerCompositionSimpleSolidColorBrush.s_IdOfColorProperty] = server;
             _changedFieldsOfCompositionSolidColorBrush |= CompositionSolidColorBrushChangedFields.ColorAnimated;
             RegisterForSerialization();
             return;
@@ -136,11 +136,13 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
     }
     private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {
-        base.SerializeChanges(c, writer);
-        ServerCompositionSimpleSolidColorBrush.SerializeAllChanges(writer, Color);
+        //base.SerializeChanges(c, writer);
+        //ServerCompositionSimpleSolidColorBrush.SerializeAllChanges(writer, Color);
         writer.Write(_changedFieldsOfCompositionSolidColorBrush);
         if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.ColorAnimated) == CompositionSolidColorBrushChangedFields.ColorAnimated)
-            writer.WriteObject(PendingAnimations.GetAndRemove(ServerCompositionSolidColorVisual.s_IdOfColorProperty));
+            writer.WriteObject(PendingAnimations.GetAndRemove(ServerCompositionSimpleSolidColorBrush.s_IdOfColorProperty));
+        else if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.Color) == CompositionSolidColorBrushChangedFields.Color)
+            writer.Write(_color);
         {
             _changedFieldsOfCompositionSolidColorBrush = default;
         }
