@@ -63,6 +63,7 @@ public abstract class ComopsitionBrush : Brush
             return false;
         }
     }
+
 }
 
 public partial class CompositionSolidColorBrush : ComopsitionBrush
@@ -119,11 +120,30 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
         }
     }
 
+    internal override void StartAnimation(string propertyName, CompositionAnimation animation, Avalonia.Rendering.Composition.Expressions.ExpressionVariant? finalValue)
+    {
+        if (propertyName == "Color")
+        {
+            var current = _color;
+            var server = animation.CreateInstance(_resource.TryGetForCompositor(animation.Compositor)!, finalValue);
+            PendingAnimations[ServerCompositionSolidColorVisual.s_IdOfColorProperty] = server;
+            _changedFieldsOfCompositionSolidColorBrush |= CompositionSolidColorBrushChangedFields.ColorAnimated;
+            RegisterForSerialization();
+            return;
+        }
 
+        base.StartAnimation(propertyName, animation, finalValue);
+    }
     private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {
         base.SerializeChanges(c, writer);
         ServerCompositionSimpleSolidColorBrush.SerializeAllChanges(writer, Color);
+        writer.Write(_changedFieldsOfCompositionSolidColorBrush);
+        if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.ColorAnimated) == CompositionSolidColorBrushChangedFields.ColorAnimated)
+            writer.WriteObject(PendingAnimations.GetAndRemove(ServerCompositionSolidColorVisual.s_IdOfColorProperty));
+        {
+            _changedFieldsOfCompositionSolidColorBrush = default;
+        }
     }
 
     partial void OnColorChanged();
