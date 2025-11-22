@@ -54,7 +54,12 @@ namespace Avalonia.Rendering.Composition.Server
     
     partial class ServerCompositionSimpleSolidColorBrush : ISolidColorBrush
     {
-        
+        public override CompositionProperty? GetCompositionProperty(string name)
+        {
+            if (name == "Color")
+                return s_IdOfColorProperty;
+            return base.GetCompositionProperty(name);
+        }
     }
     
     

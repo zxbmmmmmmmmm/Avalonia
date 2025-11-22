@@ -11,6 +11,7 @@ namespace Avalonia.Media;
 
 public abstract class ComopsitionBrush : Brush 
 {
+    private CompositionSimpleBrushChangedFields _changedFieldsOfCompositionSimpleBrush = 0;
 
     public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
 
@@ -63,8 +64,19 @@ public abstract class ComopsitionBrush : Brush
             return false;
         }
     }
-
+    private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
+    {
+        writer.Write(_changedFieldsOfCompositionSimpleBrush);
+    }
 }
+[System.Flags]
+enum CompositionSimpleBrushChangedFields : byte
+{
+    Opacity = 1,
+    TransformOrigin = 2,
+    Transform = 4
+}
+
 
 public partial class CompositionSolidColorBrush : ComopsitionBrush
 {
@@ -136,12 +148,11 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
     }
     private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {
-        //base.SerializeChanges(c, writer);
-        //ServerCompositionSimpleSolidColorBrush.SerializeAllChanges(writer, Color);
+        base.SerializeChanges(c, writer);
         writer.Write(_changedFieldsOfCompositionSolidColorBrush);
         if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.ColorAnimated) == CompositionSolidColorBrushChangedFields.ColorAnimated)
             writer.WriteObject(PendingAnimations.GetAndRemove(ServerCompositionSimpleSolidColorBrush.s_IdOfColorProperty));
-        else if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.Color) == CompositionSolidColorBrushChangedFields.Color)
+        else if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.Color) == CompositionSolidColorBrushChangedFields.Color)       
             writer.Write(_color);
         {
             _changedFieldsOfCompositionSolidColorBrush = default;
