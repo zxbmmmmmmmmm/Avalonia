@@ -58,5 +58,13 @@
         <Control x:Name="CustomVisualHost" />
       </DockPanel>
     </TabItem>
+    <TabItem Header="Composition Brush">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+          <Button x:Name="BrushHost" Click="BrushHost_Click" Content="Apply Composition Brush"/>
+          <Button x:Name="BrushHost2" Click="BrushHost2_Click" Content="Apply Composition Brush"/>
+        </StackPanel>
+      </DockPanel>
+    </TabItem>
   </TabControl>
 </UserControl>

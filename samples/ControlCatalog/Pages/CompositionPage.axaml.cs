@@ -89,7 +89,7 @@ public partial class CompositionPage : UserControl
 
         return list;
     }
-    
+
     private void EnsureImplicitAnimations()
     {
         if (_implicitAnimations == null)
@@ -121,7 +121,8 @@ public partial class CompositionPage : UserControl
         var page = border.FindAncestorOfType<CompositionPage>();
         if (page == null)
         {
-            border.AttachedToVisualTree += delegate { SetEnableAnimations(border, true); };
+            border.AttachedToVisualTree += delegate
+            { SetEnableAnimations(border, true); };
             return;
         }
 
@@ -129,26 +130,26 @@ public partial class CompositionPage : UserControl
             return;
 
         page.EnsureImplicitAnimations();
-        if (border.GetVisualParent() is Visual visualParent 
+        if (border.GetVisualParent() is Visual visualParent
             && ElementComposition.GetElementVisual(visualParent) is CompositionVisual compositionVisual)
         {
             compositionVisual.ImplicitAnimations = page._implicitAnimations;
         }
     }
-    
+
     void AttachAnimatedSolidVisual(Visual v)
     {
         void Update()
         {
-            if(_solidVisual == null)
+            if (_solidVisual == null)
                 return;
-            _solidVisual.Size = new (v.Bounds.Width / 3, v.Bounds.Height / 3);
-            _solidVisual.Offset = new (v.Bounds.Width / 3, v.Bounds.Height / 3, 0);
+            _solidVisual.Size = new(v.Bounds.Width / 3, v.Bounds.Height / 3);
+            _solidVisual.Offset = new(v.Bounds.Width / 3, v.Bounds.Height / 3, 0);
         }
         v.AttachedToVisualTree += delegate
         {
             var compositor = ElementComposition.GetElementVisual(v)?.Compositor;
-            if(compositor == null || _solidVisual?.Compositor == compositor)
+            if (compositor == null || _solidVisual?.Compositor == compositor)
                 return;
             _solidVisual = compositor.CreateSolidColorVisual();
             ElementComposition.SetElementChildVisual(v, _solidVisual);
@@ -162,7 +163,7 @@ public partial class CompositionPage : UserControl
             animation.Direction = PlaybackDirection.Alternate;
             _solidVisual.StartAnimation("Color", animation);
 
-            _solidVisual.AnchorPoint = new (0, 0);
+            _solidVisual.AnchorPoint = new(0, 0);
 
             var scale = _solidVisual.Compositor.CreateVector3KeyFrameAnimation();
             scale.Duration = TimeSpan.FromSeconds(5);
@@ -193,13 +194,13 @@ public partial class CompositionPage : UserControl
             if (_customVisual == null)
                 return;
             var h = (float)Math.Min(v.Bounds.Height, v.Bounds.Width / 3);
-            _customVisual.Size = new (v.Bounds.Width, h);
-            _customVisual.Offset = new (0, (v.Bounds.Height - h) / 2, 0);
+            _customVisual.Size = new(v.Bounds.Width, h);
+            _customVisual.Offset = new(0, (v.Bounds.Height - h) / 2, 0);
         }
         v.AttachedToVisualTree += delegate
         {
             var compositor = ElementComposition.GetElementVisual(v)?.Compositor;
-            if(compositor == null || _customVisual?.Compositor == compositor)
+            if (compositor == null || _customVisual?.Compositor == compositor)
                 return;
             _customVisual = compositor.CreateCustomVisual(new CustomVisualHandler());
             ElementComposition.SetElementChildVisual(v, _customVisual);
@@ -207,7 +208,7 @@ public partial class CompositionPage : UserControl
             PreciseDirtyRectsCheckboxCustomVisualChanged(this, new());
             Update();
         };
-        
+
         v.PropertyChanged += (_, a) =>
         {
             if (a.Property == BoundsProperty)
@@ -233,12 +234,13 @@ public partial class CompositionPage : UserControl
         {
             if (_running)
             {
-                if (_lastServerTime.HasValue) _animationElapsed += (CompositionNow - _lastServerTime.Value);
+                if (_lastServerTime.HasValue)
+                    _animationElapsed += (CompositionNow - _lastServerTime.Value);
                 _lastServerTime = CompositionNow;
             }
-            
+
             _ellipses.Clear();
-            
+
             const int cnt = 20;
             var maxPointSizeX = EffectiveSize.X / (cnt * 1.6);
             var maxPointSizeY = EffectiveSize.Y / 4;
@@ -247,7 +249,7 @@ public partial class CompositionPage : UserControl
             var animationStage = _animationElapsed.TotalSeconds / animationLength.TotalSeconds;
 
             var sinOffset = Math.Cos(_animationElapsed.TotalSeconds) * 1.5;
-            
+
             for (var c = 0; c < cnt; c++)
             {
                 var stage = (animationStage + (double)c / cnt) % 1;
@@ -265,13 +267,13 @@ public partial class CompositionPage : UserControl
                 ), opacity)));
             }
         }
-        
+
         public override void OnRender(ImmediateDrawingContext drawingContext)
         {
             if (_ellipses.Count == 0)
                 UpdateRects();
-            
-            foreach(var e in _ellipses)
+
+            foreach (var e in _ellipses)
                 drawingContext.DrawEllipse(e.brush, null, e.center, e.size, e.size);
         }
 
@@ -296,7 +298,7 @@ public partial class CompositionPage : UserControl
             foreach (var e in _ellipses)
                 Invalidate(new Rect(e.center.X - e.size, e.center.Y - e.size, e.size * 2, e.size * 2));
         }
-        
+
         public override void OnAnimationFrameUpdate()
         {
             if (_running)
@@ -306,13 +308,13 @@ public partial class CompositionPage : UserControl
                 else
                     Invalidate();
                 UpdateRects();
-                if(_preciseDirtyRects)
+                if (_preciseDirtyRects)
                     InvalidateCurrentEllipseRects();
                 RegisterForNextAnimationFrameUpdate();
             }
         }
     }
-    
+
     private void ButtonThreadSleep(object? sender, RoutedEventArgs e)
     {
         Thread.Sleep(10000);
@@ -333,6 +335,21 @@ public partial class CompositionPage : UserControl
         _customVisual?.SendHandlerMessage(PreciseDirtyRectsCheckboxCustomVisual?.IsChecked == true
             ? CustomVisualHandler.UsePreciseDirtyRects
             : CustomVisualHandler.UseNonPreciseDirtyRects);
+    }
+
+    private void BrushHost_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(BrushHost);
+        var compositionBrush = new CompositionSolidColorBrush(visual!.Compositor);
+        BrushHost.Background = compositionBrush;
+        compositionBrush.Color = Color.FromArgb(255, 255, 0, 0);
+
+
+    }
+
+    private void BrushHost2_Click(object? sender, RoutedEventArgs e)
+    {
+        BrushHost2.Background = new SolidColorBrush(Colors.Green);
     }
 }
 
