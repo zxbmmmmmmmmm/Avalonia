@@ -340,9 +340,17 @@ public partial class CompositionPage : UserControl
     private void BrushHost_Click(object? sender, RoutedEventArgs e)
     {
         var visual = ElementComposition.GetElementVisual(BrushHost);
-        var compositionBrush = new CompositionSolidColorBrush(visual!.Compositor);
+        var compositionBrush = new CompositionSolidColorBrush();
         BrushHost.Background = compositionBrush;
-        compositionBrush.Color = Color.FromArgb(255, 255, 0, 0);
+        var compositor = visual!.Compositor;
+        var animation = compositor.CreateColorKeyFrameAnimation();
+        animation.InsertKeyFrame(0, Colors.Red);
+        animation.InsertKeyFrame(0.5f, Colors.Blue);
+        animation.InsertKeyFrame(1, Colors.Green);
+        animation.Duration = TimeSpan.FromSeconds(5);
+        animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        animation.Direction = PlaybackDirection.Alternate;
+        compositionBrush.StartAnimation("Color", animation);
 
 
     }

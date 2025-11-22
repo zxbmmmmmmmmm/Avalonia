@@ -203,7 +203,9 @@ class RenderDataOpacityNode : RenderDataPushNode
 
 abstract class RenderDataBrushAndPenNode : IRenderDataItemWithServerResources
 {
-    public IBrush? ServerBrush { get; set; }
+    public IBrush? ServerBrush { 
+        get; 
+        set; }
     public IPen? ServerPen { get; set; }
     public IPen? ClientPen { get; set; }
     

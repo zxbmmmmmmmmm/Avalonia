@@ -18,7 +18,7 @@ internal interface IServerRenderResource : IServerRenderResourceObserver
     void QueuedInvalidate();
 }
 
-internal class SimpleServerRenderResource : SimpleServerObject, IServerRenderResource, IDisposable
+internal class SimpleServerRenderResource : ServerObject, IServerRenderResource, IDisposable
 {
     private bool _pendingInvalidation;
     private bool _disposed;

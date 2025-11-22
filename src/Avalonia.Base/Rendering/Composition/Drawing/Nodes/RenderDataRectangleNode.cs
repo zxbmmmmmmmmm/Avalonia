@@ -7,6 +7,11 @@ class RenderDataRectangleNode : RenderDataBrushAndPenNode
     public RoundedRect Rect { get; set; }
     public BoxShadows BoxShadows { get; set; }
 
+    public RenderDataRectangleNode()
+    {
+        
+    }
+
     public override bool HitTest(Point p)
     {
         var strokeThicknessAdjustment = (ClientPen?.Thickness / 2) ?? 0;
