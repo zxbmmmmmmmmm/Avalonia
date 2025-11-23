@@ -317,7 +317,7 @@ public partial class CompositionPage : UserControl
 
     private void ButtonThreadSleep(object? sender, RoutedEventArgs e)
     {
-        Thread.Sleep(10000);
+        Thread.Sleep(5000);
     }
 
     private void ButtonStartCustomVisual(object? sender, RoutedEventArgs e)
@@ -342,22 +342,26 @@ public partial class CompositionPage : UserControl
         var visual = ElementComposition.GetElementVisual(BrushHost);
         var compositionBrush = new CompositionSolidColorBrush();
         BrushHost.Background = compositionBrush;
-        var compositor = visual!.Compositor;
-        var animation = compositor.CreateColorKeyFrameAnimation();
-        animation.InsertKeyFrame(0, Colors.Red);
-        animation.InsertKeyFrame(0.5f, Colors.Blue);
-        animation.InsertKeyFrame(1, Colors.Green);
-        animation.Duration = TimeSpan.FromSeconds(5);
-        animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        animation.Direction = PlaybackDirection.Alternate;
-        compositionBrush.StartAnimation("Color", animation);
-
-
+        compositionBrush.Color = Colors.Green;
+        BrushHost.Foreground = new ImmutableSolidColorBrush(Colors.White);
     }
 
     private void BrushHost2_Click(object? sender, RoutedEventArgs e)
     {
-        BrushHost2.Background = new SolidColorBrush(Colors.Green);
+        var visual = ElementComposition.GetElementVisual(BrushHost);
+        var compositionBrush = BrushHost.Background as CompositionSolidColorBrush;
+        BrushHost2.BorderBrush = compositionBrush;
+        BrushHost2.Foreground = compositionBrush;
+        BrushHost2.BorderThickness = new(2);
+        var compositor = visual!.Compositor;
+        var animation = compositor.CreateColorKeyFrameAnimation();
+        animation.InsertKeyFrame(0, Colors.Red);
+        animation.InsertKeyFrame(0.5f, Colors.Green);
+        animation.InsertKeyFrame(1, Colors.Blue);
+        animation.Duration = TimeSpan.FromSeconds(3);
+        animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        animation.Direction = PlaybackDirection.Alternate;
+        compositionBrush!.StartAnimation("Color", animation);
     }
 }
 

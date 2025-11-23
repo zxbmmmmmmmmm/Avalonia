@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Animation;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Drawing;
@@ -66,7 +67,10 @@ public abstract class ComopsitionBrush : Brush
     }
     private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {
-        writer.Write(_changedFieldsOfCompositionSimpleBrush);
+        writer.Write(CompositionSimpleBrushChangedFields.Opacity | CompositionSimpleBrushChangedFields.TransformOrigin | CompositionSimpleBrushChangedFields.Transform);
+        writer.Write(Opacity);
+        writer.Write(TransformOrigin);
+        writer.WriteObject(Transform);
     }
 }
 [System.Flags]
@@ -86,6 +90,12 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
 
     internal override Func<Compositor, ServerCompositionSimpleBrush> Factory =>
         static c => new ServerCompositionSimpleSolidColorBrush(c.Server);
+
+    private protected override void OnReferencedFromCompositor(Compositor c)
+    {
+        base.OnReferencedFromCompositor(c);
+        _resource.TryGetForCompositor(c)!.Activate();
+    }
     public Avalonia.Media.Color Color
     {
         get
@@ -149,6 +159,7 @@ public partial class CompositionSolidColorBrush : ComopsitionBrush
     private protected override void SerializeChanges(Compositor c, BatchStreamWriter writer)
     {
         base.SerializeChanges(c, writer);
+        
         writer.Write(_changedFieldsOfCompositionSolidColorBrush);
         if ((_changedFieldsOfCompositionSolidColorBrush & CompositionSolidColorBrushChangedFields.ColorAnimated) == CompositionSolidColorBrushChangedFields.ColorAnimated)
             writer.WriteObject(PendingAnimations.GetAndRemove(ServerCompositionSimpleSolidColorBrush.s_IdOfColorProperty));
