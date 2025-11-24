@@ -339,9 +339,8 @@ public partial class CompositionPage : UserControl
     {
         var visual = ElementComposition.GetElementVisual(BrushHost);
 
-        var compositionBrush = visual!.Compositor.CreateSolidColorBrush();
+        var compositionBrush = visual!.Compositor.CreateLinearGradientBrush();
         BrushHost.Background = compositionBrush;
-        compositionBrush.Color = Colors.Green;
         BrushHost.Foreground = new ImmutableSolidColorBrush(Colors.White);
     }
 
@@ -353,6 +352,7 @@ public partial class CompositionPage : UserControl
         BrushHost2.Foreground = compositionBrush;
         BrushHost2.BorderThickness = new(2);
         var compositor = visual!.Compositor;
+
         var animation = compositor.CreateRelativePointKeyFrameAnimation();
         
         //animation.InsertKeyFrame(0, Colors.Red);
@@ -366,9 +366,9 @@ public partial class CompositionPage : UserControl
 
         animation.Duration = TimeSpan.FromSeconds(3);
         animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        animation.InsertKeyFrame(0.0f, new Vector2(InitialStartPointX, 0.0f));
-        animation.InsertKeyFrame(1.0f, Vector2.Zero);
-        _shimmerMaskGradient!.StartAnimation(nameof(CompositionLinearGradientBrush.StartPoint), _gradientStartPointAnimation);
+        animation.InsertKeyFrame(0.0f, new RelativePoint(-7.92f, 0.0f,RelativeUnit.Relative));
+        animation.InsertKeyFrame(1.0f, new RelativePoint(0, 0.0f, RelativeUnit.Relative));
+        compositionBrush!.StartAnimation("StartPoint", animation);
     }
 }
 
