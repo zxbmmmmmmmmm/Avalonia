@@ -334,6 +334,34 @@ public partial class CompositionPage : UserControl
             ? CustomVisualHandler.UsePreciseDirtyRects
             : CustomVisualHandler.UseNonPreciseDirtyRects);
     }
+
+    private void BrushHost_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(BrushHost);
+
+        var compositionBrush = visual!.Compositor.CreateSolidColorBrush();
+        BrushHost.Background = compositionBrush;
+        compositionBrush.Color = Colors.Green;
+        BrushHost.Foreground = new ImmutableSolidColorBrush(Colors.White);
+    }
+
+    private void BrushHost2_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(BrushHost);
+        var compositionBrush = BrushHost.Background as CompositionSimpleSolidColorBrush;
+        BrushHost2.BorderBrush = compositionBrush;
+        BrushHost2.Foreground = compositionBrush;
+        BrushHost2.BorderThickness = new(2);
+        var compositor = visual!.Compositor;
+        var animation = compositor.CreateColorKeyFrameAnimation();
+        animation.InsertKeyFrame(0, Colors.Red);
+        animation.InsertKeyFrame(0.5f, Colors.Green);
+        animation.InsertKeyFrame(1, Colors.Blue);
+        animation.Duration = TimeSpan.FromSeconds(3);
+        animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        animation.Direction = PlaybackDirection.Alternate;
+        compositionBrush!.StartAnimation("Color", animation);
+    }
 }
 
 public class CompositionPageColorItem

@@ -58,5 +58,14 @@
         <Control x:Name="CustomVisualHost" />
       </DockPanel>
     </TabItem>
+    <TabItem Header="Composition Brush">
+      <DockPanel>
+        <Button DockPanel.Dock="Top" Margin="10" Click="ButtonThreadSleep">Thread.Sleep(5000);</Button>
+        <StackPanel HorizontalAlignment="Center" DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12">
+          <Button x:Name="BrushHost" FontSize="24" Click="BrushHost_Click" Content="Apply Composition Brush"/>
+          <Button x:Name="BrushHost2" FontSize="24" Click="BrushHost2_Click" Content="Apply Animation"/>
+        </StackPanel>
+      </DockPanel>
+    </TabItem>
   </TabControl>
 </UserControl>

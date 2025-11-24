@@ -38,4 +38,6 @@ public partial class Compositor
     public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
+
+    public CompositionSimpleSolidColorBrush CreateSolidColorBrush() => new (this, new ServerCompositionSimpleSolidColorBrush(Server));
 }

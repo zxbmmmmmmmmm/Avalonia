@@ -78,17 +78,17 @@
         <Property Name="MiterLimit" Type="double" />
         <Property Name="Thickness" Type="double" />
     </Object>
-    <Object Name="CompositionSimpleBrush" Internal="true" ServerOnly="true" ServerBase="SimpleServerRenderResource">
-        <Property Name="Opacity" Type="double" />
+    <Object Name="CompositionSimpleBrush" ServerBase="SimpleServerRenderResource">
+        <Property Name="Opacity" Type="double" Animated="true" DefaultValue="1"/>
         <Property Name="TransformOrigin" Type="RelativePoint" />
         <Property Name="Transform" Type="Avalonia.Media.ITransform?" />
     </Object>
-    <Object Name="CompositionSimpleSolidColorBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
-        <Property Name="Color" Type="Avalonia.Media.Color" />
+    <Object Name="CompositionSimpleSolidColorBrush" Inherits="CompositionSimpleBrush" ServerBase="ServerCompositionSimpleBrush">
+        <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>
     </Object>
     <Manual Name="CompositionSimpleGradientBrush" />
     <Object Name="CompositionSimpleConicGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
-        <Property Name="Angle" Type="double" />
+        <Property Name="Angle" Type="double" Animated="true"/>
         <Property Name="Center" Type="Avalonia.RelativePoint" />
     </Object>
     <Object Name="CompositionSimpleRadialGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleGradientBrush">
