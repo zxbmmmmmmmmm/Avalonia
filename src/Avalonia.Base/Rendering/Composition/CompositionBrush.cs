@@ -16,8 +16,3 @@ partial class CompositionSimpleBrush : IBrush
         Server.Activate();
     }   
 }
-
-partial class CompositionSimpleSolidColorBrush : ISolidColorBrush
-{
-
-}
