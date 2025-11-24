@@ -102,6 +102,7 @@ internal class RenderDataDrawingContext : DrawingContext
         if (resource == null
             || resource is IImmutableBrush
             || resource is ImmutablePen
+            || resource is CompositionSimpleBrush
             || resource is ImmutableTransform)
             return;
         

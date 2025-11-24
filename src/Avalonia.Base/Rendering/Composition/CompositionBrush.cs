@@ -9,36 +9,12 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.Composition;
 
-partial class CompositionSimpleBrush : IBrush, ICompositionRenderResource<IBrush>
+partial class CompositionSimpleBrush : IBrush
 {
-    private protected CompositorResourceHolder<ServerCompositionSimpleBrush> _resource;
-
-    void ICompositionRenderResource.AddRefOnCompositor(Compositor c)
+    partial void InitializeDefaultsExtra()
     {
-        if (_resource.CreateOrAddRef(c, this, out _, _ => Server))
-            OnReferencedFromCompositor(c);
-    }
-
-    private protected virtual void OnReferencedFromCompositor(Compositor c)
-    {
-        if (Transform is ICompositionRenderResource<ITransform> resource)
-            resource.AddRefOnCompositor(c);
-        _resource.TryGetForCompositor(c)!.Activate();
-    }
-
-    void ICompositionRenderResource.ReleaseOnCompositor(Compositor c)
-    {
-        if (_resource.Release(c))
-            OnUnreferencedFromCompositor(c);
-    }
-
-    protected virtual void OnUnreferencedFromCompositor(Compositor c)
-    {
-        if (Transform is ICompositionRenderResource<ITransform> resource)
-            resource.ReleaseOnCompositor(c);
-    }
-
-    IBrush ICompositionRenderResource<IBrush>.GetForCompositor(Compositor c) => _resource.GetForCompositor(c);
+        Server.Activate();
+    }   
 }
 
 partial class CompositionSimpleSolidColorBrush : ISolidColorBrush

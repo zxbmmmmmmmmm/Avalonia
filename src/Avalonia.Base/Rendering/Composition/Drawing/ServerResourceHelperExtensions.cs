@@ -16,6 +16,8 @@ static class ServerResourceHelperExtensions
             return null;
         if (brush is IImmutableBrush immutable)
             return immutable;
+        if (brush is CompositionSimpleBrush compositionBrush)
+            return compositionBrush.Server;
         if (brush is ICompositionRenderResource<IBrush> resource)
             return resource.GetForCompositor(compositor);
         ThrowNotCompatible(brush);
@@ -39,7 +41,7 @@ static class ServerResourceHelperExtensions
     [MethodImpl(MethodImplOptions.NoInlining), DoesNotReturn]
     static void ThrowNotCompatible(object o) =>
         throw new InvalidOperationException(o.GetType() + " is not compatible with composition");
-    
+
     public static ITransform? GetServer(this ITransform? transform, Compositor? compositor)
     {
         if (compositor == null)
