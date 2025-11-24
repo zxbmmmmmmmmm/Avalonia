@@ -21,7 +21,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         Matrix3x2,
         Matrix4x4,
         Quaternion,
-        Color
+        Color,
+        RelativePoint
     }
 
     /// <summary>
@@ -45,7 +46,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Matrix4x4 Matrix4x4;
         [FieldOffset(4)] public Quaternion Quaternion;
         [FieldOffset(4)] public Color Color;
-        
+        [FieldOffset(4)] public RelativePoint RelativePoint;
 
         public ExpressionVariant GetProperty(string property)
         {
@@ -229,6 +230,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return default;
             }
 
+            if (Type == VariantType.RelativePoint)
+            {
+                if (ReferenceEquals(property, "X"))
+                    return (float)RelativePoint.Point.X;
+                if (ReferenceEquals(property, "Y"))
+                    return (float)RelativePoint.Point.X;
+                return default;
+            }
+
             return default;
         }
 
@@ -325,6 +335,13 @@ namespace Avalonia.Rendering.Composition.Expressions
                 Color = value
             };
 
+        public static implicit operator ExpressionVariant(RelativePoint value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.RelativePoint,
+                RelativePoint = value
+            };
+
         public static ExpressionVariant operator +(ExpressionVariant left, ExpressionVariant right)
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
@@ -356,10 +373,10 @@ namespace Avalonia.Rendering.Composition.Expressions
             
             if (left.Type == VariantType.Matrix4x4)
                 return left.Matrix4x4 + right.Matrix4x4;
-            
+
             if (left.Type == VariantType.Quaternion)
                 return left.Quaternion + right.Quaternion;
-            
+
             return default;
         }
 
@@ -602,7 +619,10 @@ namespace Avalonia.Rendering.Composition.Expressions
 
             if (Type == VariantType.Quaternion)
                 return Quaternion == right.Quaternion;
-            
+
+            if (Type == VariantType.RelativePoint)
+                return RelativePoint == right.RelativePoint;
+
             return default;
         }
 
@@ -816,6 +836,15 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
+            if (typeof(T) == typeof(RelativePoint))
+            {
+                if (Type == VariantType.RelativePoint)
+                {
+                    res = (T)(object)RelativePoint;
+                    return true;
+                }
+            }
+
             res = default;
             return false;
         }
@@ -858,6 +887,9 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (typeof(T) == typeof(Avalonia.Media.Color))
                 return (Avalonia.Media.Color) (object) v;
 
+            if (typeof(T) == typeof(RelativePoint))
+                return (RelativePoint)(object)v;
+
             throw new ArgumentException("Invalid variant type: " + typeof(T));
         }
 
@@ -895,6 +927,8 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return Matrix4x4.ToString();
             if (Type == VariantType.Color)
                 return Color.ToString();
+            if (Type == VariantType.RelativePoint)
+                return RelativePoint.ToString();
             if (Type == VariantType.Invalid)
                 return "Invalid";
             return "Unknown";

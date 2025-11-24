@@ -353,14 +353,22 @@ public partial class CompositionPage : UserControl
         BrushHost2.Foreground = compositionBrush;
         BrushHost2.BorderThickness = new(2);
         var compositor = visual!.Compositor;
-        var animation = compositor.CreateColorKeyFrameAnimation();
-        animation.InsertKeyFrame(0, Colors.Red);
-        animation.InsertKeyFrame(0.5f, Colors.Green);
-        animation.InsertKeyFrame(1, Colors.Blue);
+        var animation = compositor.CreateRelativePointKeyFrameAnimation();
+        
+        //animation.InsertKeyFrame(0, Colors.Red);
+        //animation.InsertKeyFrame(0.5f, Colors.Green);
+        //animation.InsertKeyFrame(1, Colors.Blue);
+        //animation.Duration = TimeSpan.FromSeconds(3);
+        //animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        //animation.Direction = PlaybackDirection.Alternate;
+        //compositionBrush!.StartAnimation("Color", animation);
+
+
         animation.Duration = TimeSpan.FromSeconds(3);
         animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        animation.Direction = PlaybackDirection.Alternate;
-        compositionBrush!.StartAnimation("Color", animation);
+        animation.InsertKeyFrame(0.0f, new Vector2(InitialStartPointX, 0.0f));
+        animation.InsertKeyFrame(1.0f, Vector2.Zero);
+        _shimmerMaskGradient!.StartAnimation(nameof(CompositionLinearGradientBrush.StartPoint), _gradientStartPointAnimation);
     }
 }
 

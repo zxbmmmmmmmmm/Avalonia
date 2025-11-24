@@ -39,5 +39,6 @@ public partial class Compositor
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
 
-    public CompositionSimpleSolidColorBrush CreateSolidColorBrush() => new (this, new ServerCompositionSimpleSolidColorBrush(Server));
+    public CompositionSimpleSolidColorBrush CreateSolidColorBrush() => new(this, new ServerCompositionSimpleSolidColorBrush(Server));
+    public CompositionSimpleLinearGradientBrush CreateLinearGradientBrush() => new(this, new ServerCompositionSimpleLinearGradientBrush(Server));
 }

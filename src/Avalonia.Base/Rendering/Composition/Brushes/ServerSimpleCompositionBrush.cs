@@ -12,14 +12,6 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionSimpleBrush : IBrush
     {
         ITransform? IBrush.Transform => Transform;
-
-        internal static void SerializeAllChanges(BatchStreamWriter writer, double opacity, RelativePoint transformOrigin, Avalonia.Media.ITransform? transform)
-        {
-            writer.Write(CompositionSimpleBrushChangedFields.Opacity | CompositionSimpleBrushChangedFields.TransformOrigin | CompositionSimpleBrushChangedFields.Transform);
-            writer.Write(opacity);
-            writer.Write(transformOrigin);
-            writer.WriteObject(transform);
-        }
     }
 
     internal class ServerCompositionSimpleGradientBrush : ServerCompositionSimpleBrush, IGradientBrush
@@ -62,11 +54,7 @@ namespace Avalonia.Rendering.Composition.Server
     
     partial class ServerCompositionSimpleSolidColorBrush : ISolidColorBrush
     {
-        internal static void SerializeAllChanges(BatchStreamWriter writer, Color color)
-        {
-            writer.Write(CompositionSimpleSolidColorBrushChangedFields.Color);
-            writer.Write(color);
-        }
+
     }
     
     

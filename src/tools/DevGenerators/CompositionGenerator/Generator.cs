@@ -276,8 +276,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 //server = WithGetPropertyForAnimation(server, serverGetPropertyBody);
                 server = WithGetCompositionProperty(server, serverGetCompositionPropertyBody);
             }
-
-            if (cl.ServerOnly)
+            if(cl.Properties.Count > 0)
                 server = server.AddMembers(GenerateSerializeAllMethod(cl));
             
             if(cl.Implements.Count > 0)
