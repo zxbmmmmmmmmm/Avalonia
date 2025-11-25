@@ -88,21 +88,21 @@
         <Property Name="Color" Type="Avalonia.Media.Color" Animated="true"/>
     </Object>
     <Manual Name="CompositionSimpleGradientBrush" />
-    <Object Name="CompositionSimpleConicGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
+    <Object Name="CompositionSimpleConicGradientBrush" Inherits="CompositionSimpleGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
         <Property Name="Angle" Type="double" Animated="true"/>
         <Property Name="Center" Type="Avalonia.RelativePoint"  Animated="true"/>
     </Object>
-    <Object Name="CompositionSimpleRadialGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
-        <Property Name="Center" Type="Avalonia.RelativePoint"  Animated="true"/>
+    <Object Name="CompositionSimpleRadialGradientBrush" Inherits="CompositionSimpleGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
+        <Property Name="Center" Type="Avalonia.RelativePoint" Animated="true"/>
         <Property Name="GradientOrigin" Type="Avalonia.RelativePoint"  Animated="true"/>
         <Property Name="RadiusX" Type="Avalonia.RelativeScalar" />
         <Property Name="RadiusY" Type="Avalonia.RelativeScalar" />
     </Object>
-    <Object Name="CompositionSimpleLinearGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
+    <Object Name="CompositionSimpleLinearGradientBrush" Inherits="CompositionSimpleGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
         <Property Name="StartPoint" Type="Avalonia.RelativePoint"  Animated="true"/>
         <Property Name="EndPoint" Type="Avalonia.RelativePoint"  Animated="true"/>
     </Object>
-    <Object Name="CompositionSimpleTileBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
+    <Object Name="CompositionSimpleTileBrush" Inherits="CompositionSimpleGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
         <Property Name="AlignmentX" Type="Avalonia.Media.AlignmentX" />
         <Property Name="AlignmentY" Type="Avalonia.Media.AlignmentY" />
         <Property Name="DestinationRect" Type="Avalonia.RelativeRect" />

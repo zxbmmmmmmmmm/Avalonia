@@ -13,6 +13,16 @@ partial class CompositionSimpleBrush : IBrush
 {
     partial void InitializeDefaultsExtra()
     {
-        Server.Activate();
+        Server.Activate(); 
     }   
+}
+
+public abstract partial class CompositionSimpleGradientBrush : CompositionSimpleBrush
+{
+    internal new ServerCompositionSimpleGradientBrush Server { get; }
+
+    internal CompositionSimpleGradientBrush(Compositor compositor, ServerCompositionSimpleGradientBrush server) : base(compositor, server)
+    {
+        Server = server;
+    }
 }

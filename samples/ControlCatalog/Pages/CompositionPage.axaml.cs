@@ -347,7 +347,7 @@ public partial class CompositionPage : UserControl
     private void BrushHost2_Click(object? sender, RoutedEventArgs e)
     {
         var visual = ElementComposition.GetElementVisual(BrushHost);
-        var compositionBrush = BrushHost.Background as CompositionSimpleSolidColorBrush;
+        var compositionBrush = BrushHost.Background as CompositionSimpleBrush;
         BrushHost2.BorderBrush = compositionBrush;
         BrushHost2.Foreground = compositionBrush;
         BrushHost2.BorderThickness = new(2);
