@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Drawing;
 using Avalonia.Rendering.Composition.Expressions;
@@ -13,16 +15,31 @@ partial class CompositionSimpleBrush : IBrush
 {
     partial void InitializeDefaultsExtra()
     {
-        Server.Activate(); 
-    }   
+        Server.Activate();
+    }
 }
 
 public abstract partial class CompositionSimpleGradientBrush : CompositionSimpleBrush
 {
     internal new ServerCompositionSimpleGradientBrush Server { get; }
 
+    public List<IGradientStop> GradientStops { get; set; } = [];
+    public GradientSpreadMethod SpreadMethod { get; private set; }
+    partial void OnRootChanged();
+    partial void OnRootChanging();
+
     internal CompositionSimpleGradientBrush(Compositor compositor, ServerCompositionSimpleGradientBrush server) : base(compositor, server)
     {
         Server = server;
+    }
+    private protected override void SerializeChangesCore(BatchStreamWriter writer)
+    {
+        base.SerializeChangesCore(writer);
+        writer.Write(SpreadMethod);
+        writer.Write(GradientStops.Count);
+        foreach(var stop in GradientStops)
+        {
+            writer.WriteObject(stop);
+        }
     }
 }

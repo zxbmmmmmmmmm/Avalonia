@@ -340,6 +340,11 @@ public partial class CompositionPage : UserControl
         var visual = ElementComposition.GetElementVisual(BrushHost);
 
         var compositionBrush = visual!.Compositor.CreateLinearGradientBrush();
+        compositionBrush.GradientStops.Add(new ImmutableGradientStop(0.0f, Colors.Red));
+        compositionBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Colors.Yellow));
+        compositionBrush.GradientStops.Add(new ImmutableGradientStop(1.0f, Colors.Blue));
+        compositionBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
+        compositionBrush.StartPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
         BrushHost.Background = compositionBrush;
         BrushHost.Foreground = new ImmutableSolidColorBrush(Colors.White);
     }
