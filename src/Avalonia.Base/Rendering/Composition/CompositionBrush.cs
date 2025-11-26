@@ -24,9 +24,9 @@ public abstract partial class CompositionSimpleGradientBrush : CompositionSimple
     internal new ServerCompositionSimpleGradientBrush Server { get; }
 
     public List<IGradientStop> GradientStops { get; set; } = [];
-    public GradientSpreadMethod SpreadMethod { get; private set; }
+    public GradientSpreadMethod SpreadMethod { get; set; }
     partial void OnRootChanged();
-    partial void OnRootChanging();
+    partial void OnRootChanging(); 
 
     internal CompositionSimpleGradientBrush(Compositor compositor, ServerCompositionSimpleGradientBrush server) : base(compositor, server)
     {
