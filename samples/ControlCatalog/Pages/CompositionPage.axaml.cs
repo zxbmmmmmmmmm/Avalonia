@@ -315,7 +315,7 @@ public partial class CompositionPage : UserControl
     
     private void ButtonThreadSleep(object? sender, RoutedEventArgs e)
     {
-        Thread.Sleep(10000);
+        Thread.Sleep(5000);
     }
 
     private void ButtonStartCustomVisual(object? sender, RoutedEventArgs e)
@@ -335,45 +335,185 @@ public partial class CompositionPage : UserControl
             : CustomVisualHandler.UseNonPreciseDirtyRects);
     }
 
+    // ===== Composition Brush Demo Handlers =====
+
+    private CompositionSimpleBrush? _solidBrush;
+    private CompositionSimpleLinearGradientBrush? _linearBrush;
+    private CompositionSimpleRadialGradientBrush? _radialBrush;
+    private CompositionSimpleConicGradientBrush? _conicBrush;
+
+    private void SolidBrushApply_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(SolidBrushHost);
+        if (visual == null)
+            return;
+
+        var compositor = visual.Compositor;
+        _solidBrush ??= compositor.CreateSolidColorBrush();
+        // 初始颜色
+        if (_solidBrush is CompositionSimpleBrush sb)
+        {
+            sb.Opacity = 1;
+            SolidBrushHost.Background = sb;
+        }
+    }
+
+    private void SolidBrushAnimate_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(SolidBrushHost);
+        var brush = SolidBrushHost.Background as CompositionSimpleBrush;
+        if (visual == null || brush == null)
+            return;
+
+        var animation = visual.Compositor.CreateColorKeyFrameAnimation();
+        animation.InsertKeyFrame(0f, Colors.OrangeRed);
+        animation.InsertKeyFrame(0.33f, Colors.MediumPurple);
+        animation.InsertKeyFrame(0.66f, Colors.DeepSkyBlue);
+        animation.InsertKeyFrame(1f, Colors.OrangeRed);
+        animation.Duration = TimeSpan.FromSeconds(4);
+        animation.IterationBehavior = AnimationIterationBehavior.Forever;
+        animation.Target = "Color";
+        brush.StartAnimation("Color", animation);
+    }
+
+    private void LinearBrushApply_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(LinearBrushHost);
+        if (visual == null)
+            return;
+        var compositor = visual.Compositor;
+
+        _linearBrush ??= compositor.CreateLinearGradientBrush();
+        _linearBrush.GradientStops.Clear();
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Transparent));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Color.FromArgb(180, 0xF5, 0xF5, 0xF5)));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Transparent));
+        _linearBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
+        _linearBrush.EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
+
+        LinearBrushHost.Background = _linearBrush;
+    }
+
+    private void LinearBrushAnimate_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(LinearBrushHost);
+        var brush = LinearBrushHost.Background as CompositionSimpleBrush;
+        if (visual == null || brush == null)
+            return;
+
+        var compositor = visual.Compositor;
+        var start = compositor.CreateRelativePointKeyFrameAnimation();
+        start.Duration = TimeSpan.FromSeconds(2);
+        start.IterationBehavior = AnimationIterationBehavior.Forever;
+        start.InsertKeyFrame(0f, new RelativePoint(-0.5, 0, RelativeUnit.Relative));
+        start.InsertKeyFrame(1f, new RelativePoint(1.5, 0, RelativeUnit.Relative));
+
+        var end = compositor.CreateRelativePointKeyFrameAnimation();
+        end.Duration = start.Duration;
+        end.IterationBehavior = AnimationIterationBehavior.Forever;
+        end.InsertKeyFrame(0f, new RelativePoint(0.5, 0, RelativeUnit.Relative));
+        end.InsertKeyFrame(1f, new RelativePoint(2.5, 0, RelativeUnit.Relative));
+
+        brush.StartAnimation("StartPoint", start);
+        brush.StartAnimation("EndPoint", end);
+    }
+
+    private void RadialBrushApply_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(RadialBrushHost);
+        if (visual == null)
+            return;
+        var compositor = visual.Compositor;
+
+        _radialBrush ??= compositor.CreateRadialGradientBrush();
+        _radialBrush.GradientStops.Clear();
+        _radialBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Yellow));
+        _radialBrush.GradientStops.Add(new ImmutableGradientStop(0.6f, Colors.Orange));
+        _radialBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Red));
+        _radialBrush.Center = RelativePoint.Center;
+        _radialBrush.GradientOrigin = RelativePoint.Center;
+
+        RadialBrushHost.Background = _radialBrush;
+    }
+
+    private void RadialBrushAnimate_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(RadialBrushHost);
+        var brush = RadialBrushHost.Background as CompositionSimpleBrush;
+        if (visual == null || brush == null)
+            return;
+
+        var compositor = visual.Compositor;
+        var centerAnim = compositor.CreateRelativePointKeyFrameAnimation();
+        centerAnim.Duration = TimeSpan.FromSeconds(3);
+        centerAnim.IterationBehavior = AnimationIterationBehavior.Forever;
+        centerAnim.InsertKeyFrame(0f, new RelativePoint(0.2, 0.5, RelativeUnit.Relative));
+        centerAnim.InsertKeyFrame(0.5f, new RelativePoint(0.8, 0.5, RelativeUnit.Relative));
+        centerAnim.InsertKeyFrame(1f, new RelativePoint(0.2, 0.5, RelativeUnit.Relative));
+
+        // 半径动画 (使用表达式缩放技巧：动画到不同的半径需要两个标量)
+        var radiusX = compositor.CreateScalarKeyFrameAnimation();
+        radiusX.Duration = TimeSpan.FromSeconds(3);
+        radiusX.IterationBehavior = AnimationIterationBehavior.Forever;
+        radiusX.InsertKeyFrame(0f, 0.3f);
+        radiusX.InsertKeyFrame(0.5f, 0.6f);
+        radiusX.InsertKeyFrame(1f, 0.3f);
+
+        var radiusY = compositor.CreateScalarKeyFrameAnimation();
+        radiusY.Duration = radiusX.Duration;
+        radiusY.IterationBehavior = AnimationIterationBehavior.Forever;
+        radiusY.InsertKeyFrame(0f, 0.3f);
+        radiusY.InsertKeyFrame(0.5f, 0.4f);
+        radiusY.InsertKeyFrame(1f, 0.3f);
+
+        brush.StartAnimation("Center", centerAnim);
+        brush.StartAnimation("RadiusX", radiusX);
+        brush.StartAnimation("RadiusY", radiusY);
+    }
+
+    private void ConicBrushApply_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(ConicBrushHost);
+        if (visual == null)
+            return;
+        var compositor = visual.Compositor;
+
+        _conicBrush ??= compositor.CreateConicGradientBrush();
+        _conicBrush.GradientStops.Clear();
+        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Cyan));
+        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.25f, Colors.Magenta));
+        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Colors.Yellow));
+        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.75f, Colors.Lime));
+        _conicBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Cyan));
+        _conicBrush.Center = RelativePoint.Center;
+
+        ConicBrushHost.Background = _conicBrush;
+    }
+
+    private void ConicBrushAnimate_Click(object? sender, RoutedEventArgs e)
+    {
+        var visual = ElementComposition.GetElementVisual(ConicBrushHost);
+        var brush = ConicBrushHost.Background as CompositionSimpleBrush;
+        if (visual == null || brush == null)
+            return;
+
+        var compositor = visual.Compositor;
+        var angleAnim = compositor.CreateScalarKeyFrameAnimation();
+        angleAnim.Duration = TimeSpan.FromSeconds(5);
+        angleAnim.IterationBehavior = AnimationIterationBehavior.Forever;
+        angleAnim.InsertKeyFrame(0f, 0f);
+        angleAnim.InsertKeyFrame(1f, 360f);
+        brush.StartAnimation("Angle", angleAnim);
+    }
+
     private void BrushHost_Click(object? sender, RoutedEventArgs e)
     {
-        var visual = ElementComposition.GetElementVisual(BrushHost);
-
-        var compositionBrush = visual!.Compositor.CreateLinearGradientBrush();
-        compositionBrush.GradientStops.Add(new ImmutableGradientStop(0.0f, Colors.Red));
-        compositionBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Colors.Yellow));
-        compositionBrush.GradientStops.Add(new ImmutableGradientStop(1.0f, Colors.Blue));
-        compositionBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
-        compositionBrush.StartPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
-        BrushHost.Background = compositionBrush;
-        BrushHost.Foreground = new ImmutableSolidColorBrush(Colors.White);
+        // 保留原演示（已迁移到 LinearBrushApply_Click），此处不再使用
     }
 
     private void BrushHost2_Click(object? sender, RoutedEventArgs e)
     {
-        var visual = ElementComposition.GetElementVisual(BrushHost);
-        var compositionBrush = BrushHost.Background as CompositionSimpleBrush;
-        BrushHost2.BorderBrush = compositionBrush;
-        BrushHost2.Foreground = compositionBrush;
-        BrushHost2.BorderThickness = new(2);
-        var compositor = visual!.Compositor;
-
-        var animation = compositor.CreateRelativePointKeyFrameAnimation();
-        
-        //animation.InsertKeyFrame(0, Colors.Red);
-        //animation.InsertKeyFrame(0.5f, Colors.Green);
-        //animation.InsertKeyFrame(1, Colors.Blue);
-        //animation.Duration = TimeSpan.FromSeconds(3);
-        //animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        //animation.Direction = PlaybackDirection.Alternate;
-        //compositionBrush!.StartAnimation("Color", animation);
-
-
-        animation.Duration = TimeSpan.FromSeconds(3);
-        animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        animation.InsertKeyFrame(0.0f, new RelativePoint(-7.92f, 0.0f,RelativeUnit.Relative));
-        animation.InsertKeyFrame(1.0f, new RelativePoint(0, 0.0f, RelativeUnit.Relative));
-        compositionBrush!.StartAnimation("StartPoint", animation);
+        // 保留原演示（已迁移到 LinearBrushAnimate_Click），此处不再使用
     }
 }
 
