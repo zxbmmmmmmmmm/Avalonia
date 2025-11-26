@@ -703,7 +703,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
                 if (Type == VariantType.Double)
                 {
-                    res = (T)(object)Scalar;
+                    res = (T)(object)(float)Double;
                     return true;
                 }
             }
@@ -718,7 +718,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
                 if (Type == VariantType.Scalar)
                 {
-                    res = (T)(object)(float)Double;
+                    res = (T)(object)(double)Scalar;
                     return true;
                 }
             }
@@ -855,7 +855,10 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return (bool) (object) v;
 
             if (typeof(T) == typeof(float))
-                return (float) (object) v;
+                return (float) (object)v;
+
+            if (typeof(T) == typeof(double))
+                return (double) (object)v;
 
             if (typeof(T) == typeof(Vector2))
                 return (Vector2) (object) v;
