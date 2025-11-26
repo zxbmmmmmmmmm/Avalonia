@@ -88,7 +88,10 @@
 
                         <!--  Solid Color  -->
                         <StackPanel Spacing="6">
-                            <TextBlock FontWeight="Bold" Text="SolidColor Brush" />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #SolidBrushHost.Background, Mode=OneWay}"
+                                Text="SolidColor Brush" />
                             <Border
                                 x:Name="SolidBrushHost"
                                 Height="120"
@@ -103,13 +106,16 @@
                                     Text="Solid" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Click="SolidBrushApply_Click">Create</Button>
-                                <Button Click="SolidBrushAnimate_Click">Animate</Button>
+                                <Button BorderBrush="{Binding #SolidBrushHost.Background, Mode=OneWay}" Click="SolidBrushApply_Click">Create</Button>
+                                <Button BorderBrush="{Binding #SolidBrushHost.Background, Mode=OneWay}" Click="SolidBrushAnimate_Click">Animate</Button>
                             </StackPanel>
                         </StackPanel>
                         <!--  Linear Gradient  -->
                         <StackPanel Spacing="6">
-                            <TextBlock FontWeight="Bold" Text="LinearGradient Brush" />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #LinearBrushHost.Background, Mode=OneWay}"
+                                Text="LinearGradient Brush" />
                             <Border
                                 x:Name="LinearBrushHost"
                                 Height="120"
@@ -124,13 +130,16 @@
                                     Text="Linear" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Click="LinearBrushApply_Click">Create</Button>
-                                <Button Click="LinearBrushAnimate_Click">Animate</Button>
+                                <Button BorderBrush="{Binding #LinearBrushHost.Background, Mode=OneWay}" Click="LinearBrushApply_Click">Create</Button>
+                                <Button BorderBrush="{Binding #LinearBrushHost.Background, Mode=OneWay}" Click="LinearBrushAnimate_Click">Animate</Button>
                             </StackPanel>
                         </StackPanel>
                         <!--  Radial Gradient  -->
                         <StackPanel Spacing="6">
-                            <TextBlock FontWeight="Bold" Text="RadialGradient Brush" />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #RadialBrushHost.Background, Mode=OneWay}"
+                                Text="RadialGradient Brush" />
                             <Border
                                 x:Name="RadialBrushHost"
                                 Height="120"
@@ -145,13 +154,16 @@
                                     Text="Radial" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Click="RadialBrushApply_Click">Create</Button>
-                                <Button Click="RadialBrushAnimate_Click">Animate</Button>
+                                <Button BorderBrush="{Binding #RadialBrushHost.Background, Mode=OneWay}" Click="RadialBrushApply_Click">Create</Button>
+                                <Button BorderBrush="{Binding #RadialBrushHost.Background, Mode=OneWay}" Click="RadialBrushAnimate_Click">Animate</Button>
                             </StackPanel>
                         </StackPanel>
                         <!--  Conic Gradient  -->
                         <StackPanel Spacing="6">
-                            <TextBlock FontWeight="Bold" Text="ConicGradient Brush" />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="{Binding #ConicBrushHost.Background, Mode=OneWay}"
+                                Text="ConicGradient Brush" />
                             <Border
                                 x:Name="ConicBrushHost"
                                 Height="120"
@@ -166,8 +178,8 @@
                                     Text="Conic" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Click="ConicBrushApply_Click">Create</Button>
-                                <Button Click="ConicBrushAnimate_Click">Animate</Button>
+                                <Button BorderBrush="{Binding #ConicBrushHost.Background, Mode=OneWay}" Click="ConicBrushApply_Click">Create</Button>
+                                <Button BorderBrush="{Binding #ConicBrushHost.Background, Mode=OneWay}" Click="ConicBrushAnimate_Click">Animate</Button>
                             </StackPanel>
                         </StackPanel>
                     </UniformGrid>
