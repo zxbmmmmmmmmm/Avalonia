@@ -367,7 +367,6 @@ public partial class CompositionPage : UserControl
         animation.InsertKeyFrame(1f, Color.FromRgb(44, 121, 251));
         animation.Duration = TimeSpan.FromSeconds(4);
         animation.IterationBehavior = AnimationIterationBehavior.Forever;
-        animation.Target = "Color";
         brush.StartAnimation("Color", animation);
     }
 
