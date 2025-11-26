@@ -22,7 +22,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         Matrix4x4,
         Quaternion,
         Color,
-        RelativePoint
+        RelativePoint,
+        RelativeScalar
     }
 
     /// <summary>
@@ -47,6 +48,7 @@ namespace Avalonia.Rendering.Composition.Expressions
         [FieldOffset(4)] public Quaternion Quaternion;
         [FieldOffset(4)] public Color Color;
         [FieldOffset(4)] public RelativePoint RelativePoint;
+        [FieldOffset(4)] public RelativeScalar RelativeScalar;
 
         public ExpressionVariant GetProperty(string property)
         {
@@ -235,7 +237,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 if (ReferenceEquals(property, "X"))
                     return (float)RelativePoint.Point.X;
                 if (ReferenceEquals(property, "Y"))
-                    return (float)RelativePoint.Point.X;
+                    return (float)RelativePoint.Point.Y;
                 return default;
             }
 
@@ -342,6 +344,14 @@ namespace Avalonia.Rendering.Composition.Expressions
                 RelativePoint = value
             };
 
+        public static implicit operator ExpressionVariant(RelativeScalar value) =>
+            new ExpressionVariant
+            {
+                Type = VariantType.RelativeScalar,
+                RelativeScalar = value
+            };
+
+        //TODO: RelativePoint/Scalar operators
         public static ExpressionVariant operator +(ExpressionVariant left, ExpressionVariant right)
         {
             if (left.Type != right.Type || left.Type == VariantType.Invalid)
@@ -623,6 +633,9 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (Type == VariantType.RelativePoint)
                 return RelativePoint == right.RelativePoint;
 
+            if (Type == VariantType.RelativeScalar)
+                return RelativeScalar == right.RelativeScalar;
+
             return default;
         }
 
@@ -845,6 +858,16 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
+
+            if (typeof(T) == typeof(RelativeScalar))
+            {
+                if (Type == VariantType.RelativeScalar)
+                {
+                    res = (T)(object)RelativeScalar;
+                    return true;
+                }
+            }
+
             res = default;
             return false;
         }
@@ -893,6 +916,9 @@ namespace Avalonia.Rendering.Composition.Expressions
             if (typeof(T) == typeof(RelativePoint))
                 return (RelativePoint)(object)v;
 
+            if (typeof(T) == typeof(RelativeScalar))
+                return (RelativeScalar)(object)v;
+
             throw new ArgumentException("Invalid variant type: " + typeof(T));
         }
 
@@ -932,6 +958,8 @@ namespace Avalonia.Rendering.Composition.Expressions
                 return Color.ToString();
             if (Type == VariantType.RelativePoint)
                 return RelativePoint.ToString();
+            if (Type == VariantType.RelativeScalar)
+                return RelativeScalar.ToString();
             if (Type == VariantType.Invalid)
                 return "Invalid";
             return "Unknown";

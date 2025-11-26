@@ -102,7 +102,6 @@ namespace Avalonia.Rendering.Composition.Animations
     {
         public Avalonia.RelativePoint Interpolate(Avalonia.RelativePoint @from, Avalonia.RelativePoint to, float progress)
         {
-            // 单位不同，采用中点切换策略，保持与 RelativePointAnimator 一致
             if (@from.Unit != to.Unit)
                 return progress >= 0.5f ? to : @from;
 
@@ -112,5 +111,17 @@ namespace Avalonia.Rendering.Composition.Animations
         }
 
         public static RelativePointInterpolator Instance { get; } = new();
+    }
+
+    class RelativeScalarInterpolator : IInterpolator<Avalonia.RelativeScalar>
+    {
+        public Avalonia.RelativeScalar Interpolate(Avalonia.RelativeScalar @from, Avalonia.RelativeScalar to, float progress)
+        {
+            if (@from.Unit != to.Unit)
+                return progress >= 0.5f ? to : @from;
+            return new RelativeScalar(@from.Scalar + (to.Scalar - @from.Scalar) * progress,from.Unit);
+        }
+
+        public static RelativeScalarInterpolator Instance { get; } = new();
     }
 }

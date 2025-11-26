@@ -62,6 +62,7 @@
     <KeyFrameAnimation Name="Boolean" Type="bool"/>
     <KeyFrameAnimation Name="Color" Type="Avalonia.Media.Color"/>
     <KeyFrameAnimation Name="RelativePoint" Type="Avalonia.RelativePoint"/>
+    <KeyFrameAnimation Name="RelativeScalar" Type="Avalonia.RelativeScalar"/>
     <KeyFrameAnimation Type="Vector"/>
     <KeyFrameAnimation Type="Vector2"/>
     <KeyFrameAnimation Type="Vector3"/>
@@ -95,12 +96,12 @@
     <Object Name="CompositionSimpleRadialGradientBrush" Inherits="CompositionSimpleGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
         <Property Name="Center" Type="Avalonia.RelativePoint" Animated="true"/>
         <Property Name="GradientOrigin" Type="Avalonia.RelativePoint"  Animated="true"/>
-        <Property Name="RadiusX" Type="Avalonia.RelativeScalar" />
-        <Property Name="RadiusY" Type="Avalonia.RelativeScalar" />
+        <Property Name="RadiusX" Type="Avalonia.RelativeScalar" Animated="true" DefaultValue="RelativeScalar.Middle"/>
+        <Property Name="RadiusY" Type="Avalonia.RelativeScalar" Animated="true" DefaultValue="RelativeScalar.Middle"/>
     </Object>
     <Object Name="CompositionSimpleLinearGradientBrush" Inherits="CompositionSimpleGradientBrush" ServerBase="ServerCompositionSimpleGradientBrush">
-        <Property Name="StartPoint" Type="Avalonia.RelativePoint"  Animated="true"/>
-        <Property Name="EndPoint" Type="Avalonia.RelativePoint"  Animated="true"/>
+        <Property Name="StartPoint" Type="Avalonia.RelativePoint" Animated="true"/>
+        <Property Name="EndPoint" Type="Avalonia.RelativePoint" Animated="true"/>
     </Object>
     <Object Name="CompositionSimpleTileBrush" Inherits="CompositionSimpleGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
         <Property Name="AlignmentX" Type="Avalonia.Media.AlignmentX" />

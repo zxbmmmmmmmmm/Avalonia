@@ -337,7 +337,7 @@ public partial class CompositionPage : UserControl
 
     // ===== Composition Brush Demo Handlers =====
 
-    private CompositionSimpleBrush? _solidBrush;
+    private CompositionSimpleSolidColorBrush? _solidBrush;
     private CompositionSimpleLinearGradientBrush? _linearBrush;
     private CompositionSimpleRadialGradientBrush? _radialBrush;
     private CompositionSimpleConicGradientBrush? _conicBrush;
@@ -350,12 +350,8 @@ public partial class CompositionPage : UserControl
 
         var compositor = visual.Compositor;
         _solidBrush ??= compositor.CreateSolidColorBrush();
-        // 初始颜色
-        if (_solidBrush is CompositionSimpleBrush sb)
-        {
-            sb.Opacity = 1;
-            SolidBrushHost.Background = sb;
-        }
+        _solidBrush.Color = Color.FromRgb(168, 213, 85);
+        SolidBrushHost.Background = _solidBrush;
     }
 
     private void SolidBrushAnimate_Click(object? sender, RoutedEventArgs e)
@@ -366,10 +362,9 @@ public partial class CompositionPage : UserControl
             return;
 
         var animation = visual.Compositor.CreateColorKeyFrameAnimation();
-        animation.InsertKeyFrame(0f, Colors.OrangeRed);
-        animation.InsertKeyFrame(0.33f, Colors.MediumPurple);
-        animation.InsertKeyFrame(0.66f, Colors.DeepSkyBlue);
-        animation.InsertKeyFrame(1f, Colors.OrangeRed);
+        animation.InsertKeyFrame(0f, Color.FromRgb(168, 213, 85));
+        animation.InsertKeyFrame(0.5f, Color.FromRgb(31, 167, 168));
+        animation.InsertKeyFrame(1f, Color.FromRgb(44, 121, 251));
         animation.Duration = TimeSpan.FromSeconds(4);
         animation.IterationBehavior = AnimationIterationBehavior.Forever;
         animation.Target = "Color";
@@ -385,9 +380,10 @@ public partial class CompositionPage : UserControl
 
         _linearBrush ??= compositor.CreateLinearGradientBrush();
         _linearBrush.GradientStops.Clear();
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Transparent));
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Color.FromArgb(180, 0xF5, 0xF5, 0xF5)));
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Transparent));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0f, Color.FromRgb(168,213,85)));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.33f, Color.FromRgb(31, 167, 168)));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.66f, Color.FromRgb(44, 121, 251)));
+        _linearBrush.GradientStops.Add(new ImmutableGradientStop(1f, Color.FromRgb(168, 213, 85)));
         _linearBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
         _linearBrush.EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
 
@@ -403,16 +399,19 @@ public partial class CompositionPage : UserControl
 
         var compositor = visual.Compositor;
         var start = compositor.CreateRelativePointKeyFrameAnimation();
-        start.Duration = TimeSpan.FromSeconds(2);
+        start.Duration = TimeSpan.FromSeconds(4);
         start.IterationBehavior = AnimationIterationBehavior.Forever;
-        start.InsertKeyFrame(0f, new RelativePoint(-0.5, 0, RelativeUnit.Relative));
-        start.InsertKeyFrame(1f, new RelativePoint(1.5, 0, RelativeUnit.Relative));
+        start.InsertKeyFrame(0f, new RelativePoint(-1, 0, RelativeUnit.Relative));
+        start.InsertKeyFrame(0.5f, new RelativePoint(1, 0, RelativeUnit.Relative));
+        start.InsertKeyFrame(1f, new RelativePoint(-1, 0, RelativeUnit.Relative));
+
 
         var end = compositor.CreateRelativePointKeyFrameAnimation();
         end.Duration = start.Duration;
         end.IterationBehavior = AnimationIterationBehavior.Forever;
-        end.InsertKeyFrame(0f, new RelativePoint(0.5, 0, RelativeUnit.Relative));
-        end.InsertKeyFrame(1f, new RelativePoint(2.5, 0, RelativeUnit.Relative));
+        end.InsertKeyFrame(0f, new RelativePoint(0, 0, RelativeUnit.Relative));
+        end.InsertKeyFrame(0.5f, new RelativePoint(2, 0, RelativeUnit.Relative));
+        end.InsertKeyFrame(1f, new RelativePoint(0, 0, RelativeUnit.Relative));
 
         brush.StartAnimation("StartPoint", start);
         brush.StartAnimation("EndPoint", end);
@@ -452,19 +451,19 @@ public partial class CompositionPage : UserControl
         centerAnim.InsertKeyFrame(1f, new RelativePoint(0.2, 0.5, RelativeUnit.Relative));
 
         // 半径动画 (使用表达式缩放技巧：动画到不同的半径需要两个标量)
-        var radiusX = compositor.CreateScalarKeyFrameAnimation();
+        var radiusX = compositor.CreateRelativeScalarKeyFrameAnimation();
         radiusX.Duration = TimeSpan.FromSeconds(3);
         radiusX.IterationBehavior = AnimationIterationBehavior.Forever;
-        radiusX.InsertKeyFrame(0f, 0.3f);
-        radiusX.InsertKeyFrame(0.5f, 0.6f);
-        radiusX.InsertKeyFrame(1f, 0.3f);
+        radiusX.InsertKeyFrame(0f, new(0.3f,RelativeUnit.Relative));
+        radiusX.InsertKeyFrame(0.5f, new(0.6f, RelativeUnit.Relative));
+        radiusX.InsertKeyFrame(1f, new(0.3f, RelativeUnit.Relative));
 
-        var radiusY = compositor.CreateScalarKeyFrameAnimation();
+        var radiusY = compositor.CreateRelativeScalarKeyFrameAnimation();
         radiusY.Duration = radiusX.Duration;
         radiusY.IterationBehavior = AnimationIterationBehavior.Forever;
-        radiusY.InsertKeyFrame(0f, 0.3f);
-        radiusY.InsertKeyFrame(0.5f, 0.4f);
-        radiusY.InsertKeyFrame(1f, 0.3f);
+        radiusY.InsertKeyFrame(0f, new(0.3f, RelativeUnit.Relative));
+        radiusY.InsertKeyFrame(0.5f, new(0.4f, RelativeUnit.Relative));
+        radiusY.InsertKeyFrame(1f, new(0.3f, RelativeUnit.Relative));
 
         brush.StartAnimation("Center", centerAnim);
         brush.StartAnimation("RadiusX", radiusX);
@@ -504,16 +503,6 @@ public partial class CompositionPage : UserControl
         angleAnim.InsertKeyFrame(0f, 0f);
         angleAnim.InsertKeyFrame(1f, 360f);
         brush.StartAnimation("Angle", angleAnim);
-    }
-
-    private void BrushHost_Click(object? sender, RoutedEventArgs e)
-    {
-        // 保留原演示（已迁移到 LinearBrushApply_Click），此处不再使用
-    }
-
-    private void BrushHost2_Click(object? sender, RoutedEventArgs e)
-    {
-        // 保留原演示（已迁移到 LinearBrushAnimate_Click），此处不再使用
     }
 }
 
