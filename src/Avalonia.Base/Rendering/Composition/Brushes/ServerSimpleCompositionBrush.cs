@@ -39,9 +39,9 @@ namespace Avalonia.Rendering.Composition.Server
 
     partial class ServerCompositionSimpleConicGradientBrush : IConicGradientBrush
     {
-        
+        double IConicGradientBrush.Angle => Angle;
     }
-    
+
     partial class ServerCompositionSimpleLinearGradientBrush : ILinearGradientBrush
     {
         

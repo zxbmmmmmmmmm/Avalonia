@@ -41,4 +41,6 @@ public partial class Compositor
 
     public CompositionSimpleSolidColorBrush CreateSolidColorBrush() => new(this, new ServerCompositionSimpleSolidColorBrush(Server));
     public CompositionSimpleLinearGradientBrush CreateLinearGradientBrush() => new(this, new ServerCompositionSimpleLinearGradientBrush(Server));
+    public CompositionSimpleConicGradientBrush CreateConicGradientBrush() => new(this, new ServerCompositionSimpleConicGradientBrush(Server));
+    public CompositionSimpleRadialGradientBrush CreateRadialGradientBrush() => new(this, new ServerCompositionSimpleRadialGradientBrush(Server));
 }
