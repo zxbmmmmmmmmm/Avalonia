@@ -379,10 +379,10 @@ public partial class CompositionPage : UserControl
 
         _linearBrush ??= compositor.CreateLinearGradientBrush();
         _linearBrush.GradientStops.Clear();
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0f, Color.FromRgb(168,213,85)));
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.33f, Color.FromRgb(31, 167, 168)));
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(0.66f, Color.FromRgb(44, 121, 251)));
-        _linearBrush.GradientStops.Add(new ImmutableGradientStop(1f, Color.FromRgb(168, 213, 85)));
+        _linearBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Color.FromRgb(168,213,85)));
+        _linearBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.33f, Color.FromRgb(31, 167, 168)));
+        _linearBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.66f, Color.FromRgb(44, 121, 251)));
+        _linearBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Color.FromRgb(168, 213, 85)));
         _linearBrush.StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative);
         _linearBrush.EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative);
 
@@ -404,7 +404,6 @@ public partial class CompositionPage : UserControl
         start.InsertKeyFrame(0.5f, new RelativePoint(1, 0, RelativeUnit.Relative));
         start.InsertKeyFrame(1f, new RelativePoint(-1, 0, RelativeUnit.Relative));
 
-
         var end = compositor.CreateRelativePointKeyFrameAnimation();
         end.Duration = start.Duration;
         end.IterationBehavior = AnimationIterationBehavior.Forever;
@@ -414,6 +413,8 @@ public partial class CompositionPage : UserControl
 
         brush.StartAnimation("StartPoint", start);
         brush.StartAnimation("EndPoint", end);
+
+        AnimateGradientStops(_linearBrush);
     }
 
     private void RadialBrushApply_Click(object? sender, RoutedEventArgs e)
@@ -425,9 +426,9 @@ public partial class CompositionPage : UserControl
 
         _radialBrush ??= compositor.CreateRadialGradientBrush();
         _radialBrush.GradientStops.Clear();
-        _radialBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Yellow));
-        _radialBrush.GradientStops.Add(new ImmutableGradientStop(0.6f, Colors.Orange));
-        _radialBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Red));
+        _radialBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Colors.Yellow));
+        _radialBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.6f, Colors.Orange));
+        _radialBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Colors.Red));
         _radialBrush.Center = RelativePoint.Center;
         _radialBrush.GradientOrigin = RelativePoint.Center;
 
@@ -449,7 +450,6 @@ public partial class CompositionPage : UserControl
         centerAnim.InsertKeyFrame(0.5f, new RelativePoint(0.8, 0.5, RelativeUnit.Relative));
         centerAnim.InsertKeyFrame(1f, new RelativePoint(0.2, 0.5, RelativeUnit.Relative));
 
-        // 半径动画 (使用表达式缩放技巧：动画到不同的半径需要两个标量)
         var radiusX = compositor.CreateRelativeScalarKeyFrameAnimation();
         radiusX.Duration = TimeSpan.FromSeconds(3);
         radiusX.IterationBehavior = AnimationIterationBehavior.Forever;
@@ -467,6 +467,8 @@ public partial class CompositionPage : UserControl
         brush.StartAnimation("Center", centerAnim);
         brush.StartAnimation("RadiusX", radiusX);
         brush.StartAnimation("RadiusY", radiusY);
+
+        AnimateGradientStops(_radialBrush);
     }
 
     private void ConicBrushApply_Click(object? sender, RoutedEventArgs e)
@@ -478,11 +480,11 @@ public partial class CompositionPage : UserControl
 
         _conicBrush ??= compositor.CreateConicGradientBrush();
         _conicBrush.GradientStops.Clear();
-        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0f, Colors.Cyan));
-        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.25f, Colors.Magenta));
-        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.5f, Colors.Yellow));
-        _conicBrush.GradientStops.Add(new ImmutableGradientStop(0.75f, Colors.Lime));
-        _conicBrush.GradientStops.Add(new ImmutableGradientStop(1f, Colors.Cyan));
+        _conicBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0f, Colors.Cyan));
+        _conicBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.25f, Colors.Magenta));
+        _conicBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.5f, Colors.Yellow));
+        _conicBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(0.75f, Colors.Lime));
+        _conicBrush.GradientStops.Add(compositor.CreateCompositionGradientStop(1f, Colors.Cyan));
         _conicBrush.Center = RelativePoint.Center;
 
         ConicBrushHost.Background = _conicBrush;
@@ -502,6 +504,47 @@ public partial class CompositionPage : UserControl
         angleAnim.InsertKeyFrame(0f, 0f);
         angleAnim.InsertKeyFrame(1f, 360f);
         brush.StartAnimation("Angle", angleAnim);
+
+        AnimateGradientStops(_conicBrush);
+    }
+
+    private void AnimateGradientStops(CompositionSimpleGradientBrush? brush)
+    {
+        if (brush == null)
+            return;
+        var compositor = brush.Compositor;
+        foreach (var stop in brush.GradientStops)
+        {
+            if (stop is not CompositionGradientStop gs)
+                continue;
+
+            var colorAnim = compositor.CreateColorKeyFrameAnimation();
+            colorAnim.Duration = TimeSpan.FromSeconds(4);
+            colorAnim.IterationBehavior = AnimationIterationBehavior.Forever;
+            colorAnim.InsertKeyFrame(0f, gs.Color);
+            colorAnim.InsertKeyFrame(0.5f, ShiftColor(gs.Color));
+            colorAnim.InsertKeyFrame(1f, gs.Color);
+            gs.StartAnimation("Color", colorAnim);
+
+            var offsetAnim = compositor.CreateScalarKeyFrameAnimation();
+            offsetAnim.Duration = TimeSpan.FromSeconds(4);
+            offsetAnim.IterationBehavior = AnimationIterationBehavior.Forever;
+            var o = (float)gs.Offset;
+            var o2 = Math.Clamp(gs.Offset + 0.1, 0, 1);
+            offsetAnim.InsertKeyFrame(0f, o);
+            offsetAnim.InsertKeyFrame(0.5f, (float)o2);
+            offsetAnim.InsertKeyFrame(1f, o);
+            gs.StartAnimation("Offset", offsetAnim);
+        }
+    }
+
+    private static Color ShiftColor(Color c)
+    {
+        // 简单色彩偏移：增强红蓝，降低绿
+        var r = (byte)Math.Min(255, c.R + 40);
+        var g = (byte)Math.Max(0, c.G - 30);
+        var b = (byte)Math.Min(255, c.B + 50);
+        return Color.FromArgb(c.A, r, g, b);
     }
 }
 
