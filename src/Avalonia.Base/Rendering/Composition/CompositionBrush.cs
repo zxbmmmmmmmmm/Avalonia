@@ -19,14 +19,33 @@ partial class CompositionSimpleBrush : IBrush
     }
 }
 
-public abstract partial class CompositionSimpleGradientBrush : CompositionSimpleBrush
+partial class CompositionSimpleSolidColorBrush : ISolidColorBrush
+{
+
+}
+
+partial class CompositionSimpleLinearGradientBrush : ILinearGradientBrush
+{
+}
+partial class CompositionSimpleRadialGradientBrush : IRadialGradientBrush
+{
+    public double Radius => RadiusX.Scalar;
+}
+partial class CompositionSimpleConicGradientBrush : IConicGradientBrush
+{
+
+}
+
+
+
+public abstract partial class CompositionSimpleGradientBrush : CompositionSimpleBrush, IGradientBrush
 {
     internal new ServerCompositionSimpleGradientBrush Server { get; }
-
     public List<IGradientStop> GradientStops { get; set; } = [];
+    IReadOnlyList<IGradientStop> IGradientBrush.GradientStops => GradientStops;
     public GradientSpreadMethod SpreadMethod { get; set; }
     partial void OnRootChanged();
-    partial void OnRootChanging(); 
+    partial void OnRootChanging();
 
     internal CompositionSimpleGradientBrush(Compositor compositor, ServerCompositionSimpleGradientBrush server) : base(compositor, server)
     {
@@ -37,7 +56,7 @@ public abstract partial class CompositionSimpleGradientBrush : CompositionSimple
         base.SerializeChangesCore(writer);
         writer.Write(SpreadMethod);
         writer.Write(GradientStops.Count);
-        foreach(var stop in GradientStops)
+        foreach (var stop in GradientStops)
         {
             writer.WriteObject(stop);
         }
