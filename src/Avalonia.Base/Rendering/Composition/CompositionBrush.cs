@@ -21,7 +21,12 @@ partial class CompositionSimpleBrush : IBrush
 
 partial class CompositionSimpleSolidColorBrush : ISolidColorBrush
 {
-
+    internal CompositionSimpleSolidColorBrush(Compositor compositor, ServerCompositionSimpleSolidColorBrush server, Color color):base(compositor,server)
+    {
+        Server = server;
+        Color = color;
+        InitializeDefaults();
+    }
 }
 
 partial class CompositionSimpleLinearGradientBrush : ILinearGradientBrush
