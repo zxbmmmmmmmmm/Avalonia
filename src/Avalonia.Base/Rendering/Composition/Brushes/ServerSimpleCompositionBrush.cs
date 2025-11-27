@@ -33,7 +33,7 @@ namespace Avalonia.Rendering.Composition.Server
             _gradientStops.Clear();
             var count = reader.Read<int>();
             for (var c = 0; c < count; c++)
-                _gradientStops.Add(reader.ReadObject<ImmutableGradientStop>());
+                _gradientStops.Add(reader.ReadObject<IGradientStop>());
         }
     }
 
