@@ -102,7 +102,7 @@
         <Property Name="StartPoint" Type="Avalonia.RelativePoint" Animated="true"/>
         <Property Name="EndPoint" Type="Avalonia.RelativePoint" Animated="true"/>
     </Object>
-    <Object Name="CompositionSimpleTileBrush" Inherits="CompositionSimpleGradientBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
+    <Object Name="CompositionSimpleTileBrush" Internal="true" ServerOnly="true" ServerBase="ServerCompositionSimpleBrush">
         <Property Name="AlignmentX" Type="Avalonia.Media.AlignmentX" />
         <Property Name="AlignmentY" Type="Avalonia.Media.AlignmentY" />
         <Property Name="DestinationRect" Type="Avalonia.RelativeRect" />
