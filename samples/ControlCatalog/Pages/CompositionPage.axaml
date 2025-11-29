@@ -78,6 +78,11 @@
         <TabItem Header="Composition Brush">
             <ScrollViewer>
                 <StackPanel>
+                    <StackPanel.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="BorderThickness" Value="2" />
+                        </Style>
+                    </StackPanel.Styles>
                     <Button Margin="10" Click="ButtonThreadSleep">
                         Thread.Sleep(5000);
                     </Button>
@@ -106,7 +111,10 @@
                                     Text="Solid" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button BorderBrush="{Binding #SolidBrushHost.Background, Mode=OneWay}" Click="SolidBrushCreateAnimate_Click">Create</Button>
+                                <Button
+                                    BorderBrush="{Binding #SolidBrushHost.Background, Mode=OneWay}"
+                                    Click="SolidBrushCreateAnimate_Click"
+                                    Content="Create" />
                             </StackPanel>
                         </StackPanel>
 
@@ -130,7 +138,10 @@
                                     Text="Linear" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button BorderBrush="{Binding #LinearBrushHost.Background, Mode=OneWay}" Click="LinearBrushCreateAnimate_Click">Create</Button>
+                                <Button
+                                    BorderBrush="{Binding #LinearBrushHost.Background, Mode=OneWay}"
+                                    Click="LinearBrushCreateAnimate_Click"
+                                    Content="Create" />
                             </StackPanel>
                         </StackPanel>
 
@@ -154,7 +165,10 @@
                                     Text="Radial" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button BorderBrush="{Binding #RadialBrushHost.Background, Mode=OneWay}" Click="RadialBrushCreateAnimate_Click">Create</Button>
+                                <Button
+                                    BorderBrush="{Binding #RadialBrushHost.Background, Mode=OneWay}"
+                                    Click="RadialBrushCreateAnimate_Click"
+                                    Content="Create" />
                             </StackPanel>
                         </StackPanel>
 
@@ -178,7 +192,10 @@
                                     Text="Conic" />
                             </Border>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button BorderBrush="{Binding #ConicBrushHost.Background, Mode=OneWay}" Click="ConicBrushCreateAnimate_Click">Create</Button>
+                                <Button
+                                    BorderBrush="{Binding #ConicBrushHost.Background, Mode=OneWay}"
+                                    Click="ConicBrushCreateAnimate_Click"
+                                    Content="Create" />
                             </StackPanel>
                         </StackPanel>
                     </UniformGrid>
