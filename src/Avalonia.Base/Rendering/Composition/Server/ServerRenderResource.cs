@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Rendering.Composition.Transport;
@@ -44,18 +45,18 @@ internal class SimpleServerRenderResource : ServerObject, IServerRenderResource,
 
         if (field is IServerRenderResource oldChild)
             oldChild.RemoveObserver(this);
-        else if (field is IServerRenderResource[] oldChildren)
+        else if (field is IEnumerable oldChildren)
         {
             foreach (var ch in oldChildren)
-                ch?.RemoveObserver(this);
+                (ch as IServerRenderResource)?.RemoveObserver(this);
         }
         field = value;
         if (field is IServerRenderResource newChild)
             newChild.AddObserver(this);
-        else if (field is IServerRenderResource[] newChildren)
+        else if (field is IEnumerable newChildren)
         {
             foreach (var ch in newChildren)
-                ch.AddObserver(this);
+                (ch as IServerRenderResource)?.AddObserver(this);
         }
         Invalidated();
     }

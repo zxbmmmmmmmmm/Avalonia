@@ -63,22 +63,10 @@ public abstract partial class CompositionSimpleGradientBrush : CompositionSimple
         writer.Write(GradientStops.Count);
         foreach (var stop in GradientStops)
         {
-            writer.WriteObject(stop);
+            if(stop is CompositionGradientStop comp)
+                writer.WriteObject(comp.Server);
+            else
+                writer.WriteObject(stop);
         }
-    }
-}
-
-public partial class CompositionGradientStop : IGradientStop
-{
-    internal CompositionGradientStop(Compositor compositor, ServerCompositionGradientStop server, double offset, Color color):base(compositor,server)
-    {
-        Server = server;
-        if (MathUtilities.IsZero(offset))
-        {
-            offset = 0;
-        }
-        Offset = (offset < 0) ? 0 : (offset > 1) ? 1 : offset;
-        Color = color;
-        InitializeDefaults();
     }
 }
