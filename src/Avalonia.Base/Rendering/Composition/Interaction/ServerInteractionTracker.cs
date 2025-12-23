@@ -6,6 +6,5 @@ internal class ServerInteractionTracker : ServerObject
 {
     public ServerInteractionTracker(ServerCompositor compositor) : base(compositor)
     {
-
     }
 }
