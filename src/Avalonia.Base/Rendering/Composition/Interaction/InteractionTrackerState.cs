@@ -4,10 +4,10 @@ namespace Avalonia.Rendering.Composition.Interaction;
 
 internal abstract class InteractionTrackerState
 {
-    private protected ServerInteractionTracker _interactionTracker;
+    private protected InteractionTracker _interactionTracker;
     private protected bool _disposed;
 
-    protected InteractionTrackerState(ServerInteractionTracker interactionTracker)
+    protected InteractionTrackerState(InteractionTracker interactionTracker)
     {
         _interactionTracker = interactionTracker;
         // ReSharper disable once VirtualMemberCallInConstructor
