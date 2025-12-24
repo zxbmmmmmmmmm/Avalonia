@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -10,8 +11,6 @@ internal abstract class InteractionTrackerState
     protected InteractionTrackerState(InteractionTracker interactionTracker)
     {
         _interactionTracker = interactionTracker;
-        // ReSharper disable once VirtualMemberCallInConstructor
-        EnterState(interactionTracker.Owner);
     }
 
     protected abstract void EnterState(IInteractionTrackerOwner? owner);

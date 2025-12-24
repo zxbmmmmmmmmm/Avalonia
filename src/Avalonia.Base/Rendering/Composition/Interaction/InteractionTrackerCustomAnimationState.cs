@@ -8,6 +8,7 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
 {
     public InteractionTrackerCustomAnimationState(InteractionTracker interactionTracker) : base(interactionTracker)
     {
+        EnterState(interactionTracker.Owner);
     }
 
     protected override void EnterState(IInteractionTrackerOwner? owner)

@@ -26,7 +26,7 @@ public partial class CompositionPage : UserControl
         InitializeComponent();
         AttachAnimatedSolidVisual(SolidVisualHost);
         AttachCustomVisual(CustomVisualHost);
-        this.Loaded += (s, e) =>
+        border1.Loaded += (s, e) =>
         {
             AttachInteraction();
         };
@@ -51,9 +51,8 @@ public partial class CompositionPage : UserControl
         //_interactionSource.PositionXSourceMode = InteractionSourceMode.EnabledWithInertia;
         //_interactionSource.PositionYSourceMode = InteractionSourceMode.EnabledWithInertia;
 
-        var animation = compositor.CreateExpressionAnimation("Vector3D(tracker.Position.X, original.Offset.Y, 0)");
+        var animation = compositor.CreateExpressionAnimation("Vector3D(tracker.Position.X, tracker.Position.Y, 0)");
         animation.SetReferenceParameter("tracker", tracker);
-        animation.SetReferenceParameter("original", border2Visual);
         border2Visual.StartAnimation("Offset", animation);
     }
 

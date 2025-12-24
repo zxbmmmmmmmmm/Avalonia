@@ -33,7 +33,7 @@ public partial class InteractionTracker : CompositionObject
     {
         if (Position != newPosition)
         {
-            Position = newPosition;
+            this.Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
             //OnPropertyChanged(nameof(Position), isSubPropertyChange: false);
         }
