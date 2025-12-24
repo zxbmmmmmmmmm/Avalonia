@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 public sealed partial class InteractionTrackerValuesChangedArgs
 {
-    internal InteractionTrackerValuesChangedArgs(Vector3D position, float scale, int requestId)
+    internal InteractionTrackerValuesChangedArgs(Vector3D position, double scale, int requestId)
     {
         Position = position;
         Scale = scale;
@@ -17,5 +17,5 @@ public sealed partial class InteractionTrackerValuesChangedArgs
 
     public int RequestId { get; }
 
-    public float Scale { get; }
+    public double Scale { get; }
 }

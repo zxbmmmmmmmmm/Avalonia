@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 
 internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, IServerClockItem, IInteractionTrackerInertiaHandler
 {
@@ -40,7 +40,7 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
 
     public Vector3D FinalModifiedPosition => FinalPosition;
 
-    public float FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
+    public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
     public void Start()
     {

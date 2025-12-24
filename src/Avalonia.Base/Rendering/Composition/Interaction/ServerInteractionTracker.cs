@@ -1,10 +1,8 @@
 ﻿using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition.Server;
 
-internal class ServerInteractionTracker : ServerObject
+internal partial class ServerInteractionTracker : ServerObject
 {
-    public ServerInteractionTracker(ServerCompositor compositor) : base(compositor)
-    {
-    }
+
 }

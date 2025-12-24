@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 
 internal abstract class InteractionTrackerState
 {

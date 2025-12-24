@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 
 public class InputElementInteractionSource
 {
