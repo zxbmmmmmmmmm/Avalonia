@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Avalonia.Rendering.Composition.Server;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 
 internal sealed partial class InteractionTrackerActiveInputInertiaHandler :ServerObject, IServerClockItem, IInteractionTrackerInertiaHandler
 {
@@ -24,7 +24,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
     public Vector3D InitialVelocity => new Vector3D(_xHelper.InitialVelocity, _yHelper.InitialVelocity, _zHelper.InitialVelocity);
     public Vector3D FinalPosition => new Vector3D(_xHelper.FinalValue, _yHelper.FinalValue, _zHelper.FinalValue);
     public Vector3D FinalModifiedPosition => new Vector3D(_xHelper.FinalModifiedValue, _yHelper.FinalModifiedValue, _zHelper.FinalModifiedValue);
-    public float FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
+    public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
     public InteractionTrackerActiveInputInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities, int requestId)
         :base(serverCompositor)

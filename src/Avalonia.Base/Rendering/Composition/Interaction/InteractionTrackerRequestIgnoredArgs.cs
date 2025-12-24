@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 public partial class InteractionTrackerRequestIgnoredArgs
 {
     internal InteractionTrackerRequestIgnoredArgs(int requestId)

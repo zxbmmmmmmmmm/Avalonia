@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 internal sealed class InteractionTrackerCustomAnimationState : InteractionTrackerState
 {
     public InteractionTrackerCustomAnimationState(InteractionTracker interactionTracker) : base(interactionTracker)

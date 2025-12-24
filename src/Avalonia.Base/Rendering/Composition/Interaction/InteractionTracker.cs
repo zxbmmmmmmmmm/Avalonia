@@ -3,13 +3,13 @@ using System.Threading;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Styling;
 
-namespace Avalonia.Rendering.Composition.Interaction;
+namespace Avalonia.Rendering.Composition;
 
-public class InteractionTracker : CompositionObject
+public partial class InteractionTracker : CompositionObject
 {
     private int _requestId = 0;
-    public IInteractionTrackerOwner? Owner { get; }
-    internal new ServerInteractionTracker? Server { get; }
+    public IInteractionTrackerOwner? Owner { get; init; }
+
 
     private InteractionTrackerState _state;
 
@@ -17,23 +17,18 @@ public class InteractionTracker : CompositionObject
 
     public float MaxScale { get; set; } = 1.0f;
 
-    public float Scale { get; private set; } = 1.0f;
-
     public Vector3D MinPosition { get; set; }
 
     public Vector3D MaxPosition { get; set; }
 
-    public Vector3D Position { get; private set; }
-
     public Vector3D? PositionInertiaDecayRate { get; set; }
 
-    internal InteractionTracker(Compositor compositor, ServerInteractionTracker server, IInteractionTrackerOwner? owner = null) 
-        : base(compositor, server)
+
+    partial void InitializeDefaultsExtra()
     {
-        Server = server;
-        Owner = owner;
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
+
     internal void SetPosition(Vector3D newPosition, int requestId)
     {
         if (Position != newPosition)
