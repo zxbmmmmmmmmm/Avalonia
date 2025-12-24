@@ -6,14 +6,14 @@ using System.Text;
 namespace Avalonia.Rendering.Composition.Interaction;
 public sealed partial class InteractionTrackerValuesChangedArgs
 {
-    internal InteractionTrackerValuesChangedArgs(Vector3 position, float scale, int requestId)
+    internal InteractionTrackerValuesChangedArgs(Vector3D position, float scale, int requestId)
     {
         Position = position;
         Scale = scale;
         RequestId = requestId;
     }
 
-    public Vector3 Position { get; }
+    public Vector3D Position { get; }
 
     public int RequestId { get; }
 

@@ -15,12 +15,12 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
     private Stopwatch? _stopwatch;
 
     private readonly InteractionTracker _interactionTracker;
-    private readonly Vector3 _minPosition;
-    private readonly Vector3 _maxPosition;
-    private readonly Vector3 _initialPosition;
-    private readonly Vector3 _calculatedFinalPosition;
+    private readonly Vector3D _minPosition;
+    private readonly Vector3D _maxPosition;
+    private readonly Vector3D _initialPosition;
+    private readonly Vector3D _calculatedFinalPosition;
 
-    public InteractionTrackerPointerWheelInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3 translationVelocities)
+    public InteractionTrackerPointerWheelInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities)
         : base(serverCompositor)
     {
         _interactionTracker = interactionTracker;
@@ -34,11 +34,11 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
         _calculatedFinalPosition = interactionTracker.Position + InitialVelocity * 0.25f;
     }
 
-    public Vector3 InitialVelocity { get; }
+    public Vector3D InitialVelocity { get; }
 
-    public Vector3 FinalPosition => Vector3.Clamp(_calculatedFinalPosition, _minPosition, _maxPosition);
+    public Vector3D FinalPosition => Vector3D.Clamp(_calculatedFinalPosition, _minPosition, _maxPosition);
 
-    public Vector3 FinalModifiedPosition => FinalPosition;
+    public Vector3D FinalModifiedPosition => FinalPosition;
 
     public float FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
@@ -67,8 +67,8 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
             return;
         }
 
-        var newPosition = _initialPosition + (currentElapsed / 1000.0f) * InitialVelocity;// TODO: 实现速度曲线以支持惯性
-        var clampedNewPosition = Vector3.Clamp(newPosition, _minPosition, _maxPosition);
+        var newPosition = _initialPosition + Vector3D.Multiply(InitialVelocity, (currentElapsed / 1000.0)) ;// TODO: 实现速度曲线以支持惯性
+        var clampedNewPosition = Vector3D.Clamp(newPosition, _minPosition, _maxPosition);
 
         _interactionTracker.SetPosition(clampedNewPosition, requestId: 0);
 

@@ -26,7 +26,7 @@ internal class InteractionTrackerIdleState : InteractionTrackerState
         _interactionTracker.ChangeState(new InteractionTrackerInteractingState(_interactionTracker));
     }
 
-    internal override void CompleteUserManipulation(Vector3 linearVelocity)
+    internal override void CompleteUserManipulation(Vector3D linearVelocity)
     {
     }
 
@@ -42,22 +42,22 @@ internal class InteractionTrackerIdleState : InteractionTrackerState
     {
         // Constant velocity for 250ms
         var velocityValue = delta / 0.25f;
-        Vector3 velocity = isHorizontal ? new Vector3(velocityValue, 0, 0) : new Vector3(0, velocityValue, 0);
+        var velocity = isHorizontal ? new Vector3D(velocityValue, 0, 0) : new Vector3D(0, velocityValue, 0);
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocity, requestId: 0, isFromPointerWheel: true));
     }
 
-    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3 velocityInPixelsPerSecond, int requestId)
+    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3D velocityInPixelsPerSecond, int requestId)
     {
         // State changes to inertia and inertia modifiers are evaluated with requested velocity as initial velocity
         // TODO: inertia modifiers not yet implemented.
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocityInPixelsPerSecond, requestId, isFromPointerWheel: false));
     }
 
-    internal override void TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option, int requestId)
+    internal override void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId)
     {
         if (option == InteractionTrackerClampingOption.Auto)
         {
-            value = Vector3.Clamp(value, _interactionTracker.MinPosition, _interactionTracker.MaxPosition);
+            value = Vector3D.Clamp(value, _interactionTracker.MinPosition, _interactionTracker.MaxPosition);
         }
 
         _interactionTracker.SetPosition(value, requestId);

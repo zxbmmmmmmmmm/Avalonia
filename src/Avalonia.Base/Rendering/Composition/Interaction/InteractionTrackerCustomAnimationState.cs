@@ -21,7 +21,7 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
         _interactionTracker.ChangeState(new InteractionTrackerInteractingState(_interactionTracker));
     }
 
-    internal override void CompleteUserManipulation(Vector3 linearVelocity)
+    internal override void CompleteUserManipulation(Vector3D linearVelocity)
     {
     }
 
@@ -37,7 +37,7 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
     {
     }
 
-    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3 velocityInPixelsPerSecond, int requestId)
+    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3D velocityInPixelsPerSecond, int requestId)
     {
         // TODO: Stop current animation. Currently, the TryUpdate[Position|Scale]WithAnimation methods are not implemented.
 
@@ -46,11 +46,11 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocityInPixelsPerSecond, requestId, isFromPointerWheel: false));
     }
 
-    internal override void TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option, int requestId)
+    internal override void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId)
     {
         if (option == InteractionTrackerClampingOption.Auto)
         {
-            value = Vector3.Clamp(value, _interactionTracker.MinPosition, _interactionTracker.MaxPosition);
+            value = Vector3D.Clamp(value, _interactionTracker.MinPosition, _interactionTracker.MaxPosition);
         }
 
         _interactionTracker.SetPosition(value, requestId);

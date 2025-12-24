@@ -21,12 +21,12 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
     // > InteractionTracker was built to utilize the new Animation engine that operates on an independent thread at 60 FPS,resulting in smooth motion.
     //private const int IntervalInMilliseconds = 17; // Ceiling of 1000/60
 
-    public Vector3 InitialVelocity => new Vector3(_xHelper.InitialVelocity, _yHelper.InitialVelocity, _zHelper.InitialVelocity);
-    public Vector3 FinalPosition => new Vector3(_xHelper.FinalValue, _yHelper.FinalValue, _zHelper.FinalValue);
-    public Vector3 FinalModifiedPosition => new Vector3(_xHelper.FinalModifiedValue, _yHelper.FinalModifiedValue, _zHelper.FinalModifiedValue);
+    public Vector3D InitialVelocity => new Vector3D(_xHelper.InitialVelocity, _yHelper.InitialVelocity, _zHelper.InitialVelocity);
+    public Vector3D FinalPosition => new Vector3D(_xHelper.FinalValue, _yHelper.FinalValue, _zHelper.FinalValue);
+    public Vector3D FinalModifiedPosition => new Vector3D(_xHelper.FinalModifiedValue, _yHelper.FinalModifiedValue, _zHelper.FinalModifiedValue);
     public float FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
-    public InteractionTrackerActiveInputInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3 translationVelocities, int requestId)
+    public InteractionTrackerActiveInputInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities, int requestId)
         :base(serverCompositor)
     {
         _interactionTracker = interactionTracker;
@@ -61,7 +61,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             return;
         }
 
-        var newPosition = new Vector3(
+        var newPosition = new Vector3D(
             _xHelper.GetPosition(currentElapsedInSeconds),
             _yHelper.GetPosition(currentElapsedInSeconds),
             _zHelper.GetPosition(currentElapsedInSeconds));
@@ -78,25 +78,25 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
     private sealed class AxisHelper
     {
         private float? _dampingStateTimeInSeconds;
-        private float? _dampingStatePosition;
+        private double? _dampingStatePosition;
 
         internal InteractionTrackerActiveInputInertiaHandler Handler { get; }
-        internal float DecayRate { get; }
-        internal float InitialVelocity { get; }
-        internal float InitialValue { get; }
-        internal float FinalValue { get; }
-        internal float FinalModifiedValue { get; }
-        internal float TimeToMinimumVelocity { get; }
+        internal double DecayRate { get; }
+        internal double InitialVelocity { get; }
+        internal double InitialValue { get; }
+        internal double FinalValue { get; }
+        internal double FinalModifiedValue { get; }
+        internal double TimeToMinimumVelocity { get; }
         internal Axis Axis { get; }
 
         internal bool HasCompleted { get; private set; }
 
-        public AxisHelper(InteractionTrackerActiveInputInertiaHandler handler, Vector3 velocities, Axis axis)
+        public AxisHelper(InteractionTrackerActiveInputInertiaHandler handler, Vector3D velocities, Axis axis)
         {
             Axis = axis;
             Handler = handler;
             InitialVelocity = GetValue(velocities);
-            DecayRate = 1.0f - GetValue(Handler._interactionTracker.PositionInertiaDecayRate ?? new(0.95f));
+            DecayRate = 1.0 - GetValue(Handler._interactionTracker.PositionInertiaDecayRate ?? new(0.95,0.95,0.95));
             InitialValue = GetValue(Handler._interactionTracker.Position);
 
             TimeToMinimumVelocity = GetTimeToMinimumVelocity();
@@ -107,7 +107,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             FinalModifiedValue = Math.Clamp(FinalValue, GetValue(Handler._interactionTracker.MinPosition), GetValue(Handler._interactionTracker.MaxPosition));
         }
 
-        private float GetValue(Vector3 vector)
+        private double GetValue(Vector3D vector)
         {
             return Axis switch
             {
@@ -118,17 +118,17 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             };
         }
 
-        private float GetTimeToMinimumVelocity()
+        private double GetTimeToMinimumVelocity()
         {
             var epsilon = 0.0000011920929f;
 
             var minimumVelocity = 30.0f;
 
-            return TimeToMinimumVelocityCore(MathF.Abs(InitialVelocity), DecayRate, InitialValue);
+            return TimeToMinimumVelocityCore(Math.Abs(InitialVelocity), DecayRate, InitialValue);
 
-            float TimeToMinimumVelocityCore(float initialVelocity, float decayRate, float initialPosition)
+            double TimeToMinimumVelocityCore(double initialVelocity, double decayRate, double initialPosition)
             {
-                var time = 0.0f;
+                var time = 0.0;
                 if (initialVelocity > minimumVelocity)
                 {
                     if (!CompositionMathHelpers.IsCloseReal(decayRate, 1.0f, epsilon))
@@ -139,11 +139,11 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
                         }
                         else
                         {
-                            return (MathF.Log(minimumVelocity) - MathF.Log(initialVelocity)) / MathF.Log(decayRate);
+                            return (MathF.Log(minimumVelocity) - Math.Log(initialVelocity)) / Math.Log(decayRate);
                         }
                     }
 
-                    time = (Math.Sign(initialVelocity) * float.MaxValue - initialPosition) / initialVelocity;
+                    time = (Math.Sign(initialVelocity) * double.MaxValue - initialPosition) / initialVelocity;
 
                     if (time < 0.0f)
                     {
@@ -155,9 +155,9 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             }
         }
 
-        private float CalculateDeltaPosition(float time)
+        private double CalculateDeltaPosition(double time)
         {
-            float epsilon = 0.0000011920929f;
+            double epsilon = 0.0000011920929;
 
             if (CompositionMathHelpers.IsCloseReal(DecayRate, 1.0f, epsilon))
             {
@@ -169,12 +169,12 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             }
             else
             {
-                float val = MathF.Pow(DecayRate, time);
-                return ((val - 1.0f) * InitialVelocity) / MathF.Log(DecayRate);
+                double val = Math.Pow(DecayRate, time);
+                return ((val - 1.0f) * InitialVelocity) / Math.Log(DecayRate);
             }
         }
 
-        public float GetPosition(float currentElapsedInSeconds)
+        public double GetPosition(float currentElapsedInSeconds)
         {
             if (currentElapsedInSeconds >= TimeToMinimumVelocity)
             {
@@ -211,12 +211,12 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
 internal static class CompositionMathHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsCloseReal(float a, float b, float epsilon = 10.0f * float.Epsilon)
-        => MathF.Abs(a - b) <= epsilon;
+    internal static bool IsCloseReal(double a, double b, double epsilon = 10.0 * double.Epsilon)
+        => Math.Abs(a - b) <= epsilon;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsCloseRealZero(float a, float epsilon = 10.0f * float.Epsilon)
-        => MathF.Abs(a) < epsilon;
+    internal static bool IsCloseRealZero(double a, double epsilon = 10.0 * double.Epsilon)
+        => Math.Abs(a) < epsilon;
 }
 
 

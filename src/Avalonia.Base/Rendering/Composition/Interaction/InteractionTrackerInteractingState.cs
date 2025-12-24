@@ -25,31 +25,31 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
         //}
     }
 
-    internal override void CompleteUserManipulation(Vector3 linearVelocity)
+    internal override void CompleteUserManipulation(Vector3D linearVelocity)
     {
         _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)
     {
-        _interactionTracker.SetPosition(_interactionTracker.Position + new Vector3((float)translationDelta.X, (float)translationDelta.Y, 0), requestId: 0);
+        _interactionTracker.SetPosition(_interactionTracker.Position + new Vector3D((float)translationDelta.X, (float)translationDelta.Y, 0), requestId: 0);
     }
 
     internal override void ReceiveInertiaStarting(Point linearVelocity)
     {
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, new Vector3((float)linearVelocity.X, (float)linearVelocity.Y, 0), requestId: 0, isFromPointerWheel: false));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, new Vector3D((float)linearVelocity.X, (float)linearVelocity.Y, 0), requestId: 0, isFromPointerWheel: false));
     }
 
     internal override void ReceivePointerWheel(int delta, bool isHorizontal)
     {
     }
 
-    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3 velocityInPixelsPerSecond, int requestId)
+    internal override void TryUpdatePositionWithAdditionalVelocity(Vector3D velocityInPixelsPerSecond, int requestId)
     {
         _interactionTracker.Owner?.RequestIgnored(_interactionTracker, new InteractionTrackerRequestIgnoredArgs(requestId));
     }
 
-    internal override void TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option, int requestId)
+    internal override void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId)
     {
         _interactionTracker.Owner?.RequestIgnored(_interactionTracker, new InteractionTrackerRequestIgnoredArgs(requestId));
     }

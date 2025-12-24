@@ -10,15 +10,15 @@ public partial class InteractionTrackerInertiaStateEnteredArgs
     {
     }
 
-    public required Vector3? ModifiedRestingPosition { get; init; }
+    public required Vector3D? ModifiedRestingPosition { get; init; }
 
     public required float? ModifiedRestingScale { get; init; }
 
-    public required Vector3 NaturalRestingPosition { get; init; }
+    public required Vector3D NaturalRestingPosition { get; init; }
 
     public required float NaturalRestingScale { get; init; }
 
-    public required Vector3 PositionVelocityInPixelsPerSecond { get; init; }
+    public required Vector3D PositionVelocityInPixelsPerSecond { get; init; }
 
     public required int RequestId { get; init; }
 
