@@ -2,7 +2,7 @@
 
 namespace Avalonia.Rendering.Composition;
 
-internal class InteractionTrackerIdleState : InteractionTrackerState
+internal sealed class InteractionTrackerIdleState : InteractionTrackerState
 {
 	private readonly bool _isInitialIdleState;
     private readonly int _requestId;
@@ -11,6 +11,7 @@ internal class InteractionTrackerIdleState : InteractionTrackerState
     {
         _requestId = requestId;
         _isInitialIdleState = isInitialIdleState;
+        EnterState(interactionTracker.Owner);
     }
 
     protected override void EnterState(IInteractionTrackerOwner? owner)

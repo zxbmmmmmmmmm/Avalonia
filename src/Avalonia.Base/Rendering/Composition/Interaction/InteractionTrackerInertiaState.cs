@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Avalonia.Rendering.Composition;
 
-internal class InteractionTrackerInertiaState : InteractionTrackerState
+internal sealed class InteractionTrackerInertiaState : InteractionTrackerState
 {
     private readonly IInteractionTrackerInertiaHandler _handler;
     private readonly int _requestId;
@@ -17,6 +17,7 @@ internal class InteractionTrackerInertiaState : InteractionTrackerState
         _handler = isFromPointerWheel
             ? new InteractionTrackerPointerWheelInertiaHandler(interactionTracker.Server!.Compositor, interactionTracker, translationVelocities)
             : new InteractionTrackerActiveInputInertiaHandler(interactionTracker.Server!.Compositor, interactionTracker, translationVelocities, _requestId);
+        EnterState(interactionTracker.Owner);
     }
 
     protected override void EnterState(IInteractionTrackerOwner? owner)
