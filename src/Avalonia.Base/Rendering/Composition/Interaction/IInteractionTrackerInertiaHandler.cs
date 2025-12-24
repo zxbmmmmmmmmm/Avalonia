@@ -7,9 +7,9 @@ namespace Avalonia.Rendering.Composition.Interaction;
 
 internal interface IInteractionTrackerInertiaHandler
 {
-    Vector3 InitialVelocity { get; }
-    Vector3 FinalPosition { get; }
-    Vector3 FinalModifiedPosition { get; }
+    Vector3D InitialVelocity { get; }
+    Vector3D FinalPosition { get; }
+    Vector3D FinalModifiedPosition { get; }
     float FinalScale { get; }
 
     void Start();

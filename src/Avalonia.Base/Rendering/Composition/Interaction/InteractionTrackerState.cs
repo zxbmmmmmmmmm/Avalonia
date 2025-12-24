@@ -16,10 +16,10 @@ internal abstract class InteractionTrackerState
 
     protected abstract void EnterState(IInteractionTrackerOwner? owner);
     internal abstract void StartUserManipulation();
-    internal abstract void CompleteUserManipulation(Vector3 linearVelocity);
+    internal abstract void CompleteUserManipulation(Vector3D linearVelocity);
     internal abstract void ReceiveManipulationDelta(Point translationDelta);
     internal abstract void ReceiveInertiaStarting(Point linearVelocity);
     internal abstract void ReceivePointerWheel(int delta, bool isHorizontal);
-    internal abstract void TryUpdatePositionWithAdditionalVelocity(Vector3 velocityInPixelsPerSecond, int requestId);
-    internal abstract void TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option, int requestId);
+    internal abstract void TryUpdatePositionWithAdditionalVelocity(Vector3D velocityInPixelsPerSecond, int requestId);
+    internal abstract void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId);
 }

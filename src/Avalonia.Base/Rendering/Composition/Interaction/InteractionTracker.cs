@@ -19,22 +19,22 @@ public class InteractionTracker : CompositionObject
 
     public float Scale { get; private set; } = 1.0f;
 
-    public Vector3 MinPosition { get; set; }
+    public Vector3D MinPosition { get; set; }
 
-    public Vector3 MaxPosition { get; set; }
+    public Vector3D MaxPosition { get; set; }
 
-    public Vector3 Position { get; private set; }
+    public Vector3D Position { get; private set; }
 
-    public Vector3? PositionInertiaDecayRate { get; set; }
+    public Vector3D? PositionInertiaDecayRate { get; set; }
 
     internal InteractionTracker(Compositor compositor, ServerInteractionTracker server, IInteractionTrackerOwner? owner = null) 
-        : base(compositor, new ServerInteractionTracker(compositor.Server))
+        : base(compositor, server)
     {
         Server = server;
         Owner = owner;
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
-    internal void SetPosition(Vector3 newPosition, int requestId)
+    internal void SetPosition(Vector3D newPosition, int requestId)
     {
         if (Position != newPosition)
         {
@@ -54,7 +54,7 @@ public class InteractionTracker : CompositionObject
         _state.StartUserManipulation();
     }
 
-    internal void CompleteUserManipulation(Vector3 linearVelocity)
+    internal void CompleteUserManipulation(Vector3D linearVelocity)
     {
         _state.CompleteUserManipulation(-linearVelocity);
     }
@@ -79,19 +79,19 @@ public class InteractionTracker : CompositionObject
         _state.ReceivePointerWheel(-delta, isHorizontal);
     }
 
-    public int TryUpdatePosition(Vector3 value)
+    public int TryUpdatePosition(Vector3D value)
         => TryUpdatePosition(value, InteractionTrackerClampingOption.Auto);
 
-    public int TryUpdatePositionBy(Vector3 amount)
+    public int TryUpdatePositionBy(Vector3D amount)
         => TryUpdatePosition(Position + amount);
 
-    public int TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option)
+    public int TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option)
     {
         var id = Interlocked.Increment(ref _requestId);
         _state.TryUpdatePosition(value, option, id);
         return id;
     }
 
-    public int TryUpdatePositionBy(Vector3 amount, InteractionTrackerClampingOption option)
+    public int TryUpdatePositionBy(Vector3D amount, InteractionTrackerClampingOption option)
         => TryUpdatePosition(Position + amount, option);
 }
