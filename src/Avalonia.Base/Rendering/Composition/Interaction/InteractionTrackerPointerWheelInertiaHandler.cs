@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Numerics;
+using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Interaction;
 
-internal class InteractionTrackerPointerWheelInertiaHandler : IInteractionTrackerInertiaHandler
+internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, IServerClockItem, IInteractionTrackerInertiaHandler
 {
     // InteractionTracker works at 60 FPS, per documentation
     // https://learn.microsoft.com/en-us/windows/uwp/composition/interaction-tracker-manipulations#why-use-interactiontracker
     // > InteractionTracker was built to utilize the new Animation engine that operates on an independent thread at 60 FPS,resulting in smooth motion.
-    private const int IntervalInMilliseconds = 17; // Ceiling of 1000/60
+    //private const int IntervalInMilliseconds = 17; // Ceiling of 1000/60
 
-    private Timer? _timer;
     private Stopwatch? _stopwatch;
 
     private readonly InteractionTracker _interactionTracker;
@@ -20,7 +20,8 @@ internal class InteractionTrackerPointerWheelInertiaHandler : IInteractionTracke
     private readonly Vector3 _initialPosition;
     private readonly Vector3 _calculatedFinalPosition;
 
-    public InteractionTrackerPointerWheelInertiaHandler(InteractionTracker interactionTracker, Vector3 translationVelocities)
+    public InteractionTrackerPointerWheelInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3 translationVelocities)
+        : base(serverCompositor)
     {
         _interactionTracker = interactionTracker;
         _minPosition = interactionTracker.MinPosition;
@@ -43,22 +44,18 @@ internal class InteractionTrackerPointerWheelInertiaHandler : IInteractionTracke
 
     public void Start()
     {
-        if (_timer is not null)
-        {
-            throw new InvalidOperationException("Cannot start inertia timer twice.");
-        }
-
+        Compositor.Animations.AddToClock(this);
         _stopwatch = Stopwatch.StartNew();
-        _timer = new Timer(OnTick, null, 0, IntervalInMilliseconds);
     }
 
     public void Stop()
     {
-        _timer?.Dispose();
+        Compositor.Animations.RemoveFromClock(this);
         _stopwatch?.Stop();
     }
 
-    private void OnTick(object? state)
+
+    public void OnTick()
     {
         var currentElapsed = _stopwatch!.ElapsedMilliseconds;
 
@@ -66,12 +63,11 @@ internal class InteractionTrackerPointerWheelInertiaHandler : IInteractionTracke
         {
             _interactionTracker.SetPosition(FinalModifiedPosition, requestId: 0);
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
-            _timer!.Dispose();
             _stopwatch!.Stop();
             return;
         }
 
-        var newPosition = _initialPosition + (currentElapsed / 1000.0f) * InitialVelocity;
+        var newPosition = _initialPosition + (currentElapsed / 1000.0f) * InitialVelocity;// TODO: 实现速度曲线以支持惯性
         var clampedNewPosition = Vector3.Clamp(newPosition, _minPosition, _maxPosition);
 
         _interactionTracker.SetPosition(clampedNewPosition, requestId: 0);
@@ -79,7 +75,6 @@ internal class InteractionTrackerPointerWheelInertiaHandler : IInteractionTracke
         if (clampedNewPosition.Equals(FinalModifiedPosition))
         {
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
-            _timer!.Dispose();
             _stopwatch!.Stop();
         }
     }

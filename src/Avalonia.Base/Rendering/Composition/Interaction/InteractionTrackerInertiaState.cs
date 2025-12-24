@@ -13,9 +13,10 @@ internal class InteractionTrackerInertiaState : InteractionTrackerState
     public InteractionTrackerInertiaState(InteractionTracker interactionTracker, Vector3 translationVelocities, int requestId, bool isFromPointerWheel) : base(interactionTracker)
     {
         _requestId = requestId;
+        
         _handler = isFromPointerWheel
-            ? new InteractionTrackerPointerWheelInertiaHandler(interactionTracker, translationVelocities)
-            : new InteractionTrackerActiveInputInertiaHandler(interactionTracker, translationVelocities, _requestId);
+            ? new InteractionTrackerPointerWheelInertiaHandler(interactionTracker.Server!.Compositor, interactionTracker, translationVelocities)
+            : new InteractionTrackerActiveInputInertiaHandler(interactionTracker.Server!.Compositor, interactionTracker, translationVelocities, _requestId);
     }
 
     protected override void EnterState(IInteractionTrackerOwner? owner)
@@ -56,6 +57,7 @@ internal class InteractionTrackerInertiaState : InteractionTrackerState
     internal override void StartUserManipulation()
     {
         _interactionTracker.ChangeState(new InteractionTrackerInteractingState(_interactionTracker));
+        _handler.Stop();
     }
 
     internal override void CompleteUserManipulation(Vector3 linearVelocity)
@@ -77,12 +79,14 @@ internal class InteractionTrackerInertiaState : InteractionTrackerState
         // Constant velocity for 250ms
         var velocity = totalDelta / 0.25f;
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocity, requestId: 0, isFromPointerWheel: true));
+        _handler.Stop();
     }
 
     internal override void TryUpdatePositionWithAdditionalVelocity(Vector3 velocityInPixelsPerSecond, int requestId)
     {
         // Inertia is restarted (state re-enters inertia) and inertia modifiers are evaluated with requested velocity added to current velocity
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, _handler.InitialVelocity + velocityInPixelsPerSecond, requestId, isFromPointerWheel: false));
+        _handler.Stop();
     }
 
     internal override void TryUpdatePosition(Vector3 value, InteractionTrackerClampingOption option, int requestId)
@@ -94,10 +98,7 @@ internal class InteractionTrackerInertiaState : InteractionTrackerState
 
         _interactionTracker.SetPosition(value, requestId);
         _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId));
-    }
-
-    public override void Dispose()
-    {
         _handler.Stop();
     }
+
 }
