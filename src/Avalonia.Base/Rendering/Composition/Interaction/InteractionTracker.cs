@@ -25,6 +25,8 @@ public class InteractionTracker : CompositionObject
 
     public Vector3 Position { get; private set; }
 
+    public Vector3? PositionInertiaDecayRate { get; set; }
+
     internal InteractionTracker(Compositor compositor, ServerInteractionTracker server, IInteractionTrackerOwner? owner = null) 
         : base(compositor, new ServerInteractionTracker(compositor.Server))
     {
