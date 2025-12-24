@@ -26,6 +26,35 @@ public partial class CompositionPage : UserControl
         InitializeComponent();
         AttachAnimatedSolidVisual(SolidVisualHost);
         AttachCustomVisual(CustomVisualHost);
+        this.Loaded += (s, e) =>
+        {
+            AttachInteraction();
+        };
+    }
+
+    private void AttachInteraction()
+    {
+        var border1Visual = ElementComposition.GetElementVisual(border1);
+        var border2Visual = ElementComposition.GetElementVisual(border2);
+        var compositor = border1Visual.Compositor;
+        var tracker = compositor.CreateInteractionTracker();
+
+        tracker.MinPosition = new Vector3D(0,0,0);
+        tracker.MaxPosition = new Vector3D((float)this.Width - border2Visual.Size.X, Height, 0);
+
+        // On non-Skia (e.g, Android), the Visual CompositionTarget is set from XamlRoot.
+        // So, we need to call GetElementVisual on Loaded. Otherwise, it won't work.
+        // NOTE: The sample still doesn't work on platforms other than Skia
+        var interactionSource = new InputElementInteractionSource(border1, tracker);
+
+        //_interactionSource.ManipulationRedirectionMode = VisualInteractionSourceRedirectionMode.CapableTouchpadAndPointerWheel;
+        //_interactionSource.PositionXSourceMode = InteractionSourceMode.EnabledWithInertia;
+        //_interactionSource.PositionYSourceMode = InteractionSourceMode.EnabledWithInertia;
+
+        var animation = compositor.CreateExpressionAnimation("Vector3D(tracker.Position.X, original.Offset.Y, 0)");
+        animation.SetReferenceParameter("tracker", tracker);
+        animation.SetReferenceParameter("original", border2Visual);
+        border2Visual.StartAnimation("Offset", animation);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -11,7 +11,7 @@ public partial class InteractionTracker : CompositionObject
     public IInteractionTrackerOwner? Owner { get; init; }
 
 
-    private InteractionTrackerState _state;
+    private InteractionTrackerState _state = null!;
 
     public float MinScale { get; set; } = 1.0f;
 

@@ -58,5 +58,12 @@
         <Control x:Name="CustomVisualHost" />
       </DockPanel>
     </TabItem>
+    <TabItem Header="Interaction">
+          <StackPanel Spacing="20">
+		<Border x:Name="border1" Width="100" Height="100" Background="Red"  />
+		<Border x:Name="border2" Width="100" Height="100" Background="Blue" />
+		<TextBlock x:Name="logTB" />
+	</StackPanel>
+    </TabItem>
   </TabControl>
 </UserControl>
