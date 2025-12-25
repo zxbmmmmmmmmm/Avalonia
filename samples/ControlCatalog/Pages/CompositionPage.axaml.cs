@@ -51,7 +51,7 @@ public partial class CompositionPage : UserControl
         //_interactionSource.PositionXSourceMode = InteractionSourceMode.EnabledWithInertia;
         //_interactionSource.PositionYSourceMode = InteractionSourceMode.EnabledWithInertia;
 
-        var animation = compositor.CreateExpressionAnimation("Vector3D(tracker.Position.X, tracker.Position.Y, 0)");
+        var animation = compositor.CreateExpressionAnimation("Vector3(tracker.Position.X, tracker.Position.Y, 0)");
         animation.SetReferenceParameter("tracker", tracker);
         border2Visual.StartAnimation("Offset", animation);
     }
