@@ -40,7 +40,7 @@ public partial class CompositionPage : UserControl
         var tracker = compositor.CreateInteractionTracker();
 
         tracker.MinPosition = new Vector3D(0,0,0);
-        tracker.MaxPosition = new Vector3D((float)this.DesiredSize.Width - border2Visual.Size.X, this.DesiredSize.Height, 0);
+        tracker.MaxPosition = new Vector3D(500, 500, 0);
 
         // On non-Skia (e.g, Android), the Visual CompositionTarget is set from XamlRoot.
         // So, we need to call GetElementVisual on Loaded. Otherwise, it won't work.
@@ -51,7 +51,7 @@ public partial class CompositionPage : UserControl
         //_interactionSource.PositionXSourceMode = InteractionSourceMode.EnabledWithInertia;
         //_interactionSource.PositionYSourceMode = InteractionSourceMode.EnabledWithInertia;
 
-        var animation = compositor.CreateExpressionAnimation("Vector3(tracker.Position.X, tracker.Position.Y, 0)");
+        var animation = compositor.CreateExpressionAnimation("Vector3(tracker.Position.X, tracker.Position.Y, tracker.Position.Z)");// TODO: Z->Scalar?
         animation.SetReferenceParameter("tracker", tracker);
         border2Visual.StartAnimation("Offset", animation);
     }
