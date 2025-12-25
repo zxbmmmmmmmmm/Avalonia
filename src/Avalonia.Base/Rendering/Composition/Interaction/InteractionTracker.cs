@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Rendering.Composition;
@@ -38,7 +39,7 @@ public partial class InteractionTracker : CompositionObject
         {
             Debug.WriteLine($"{m} SetPosition {newPosition}");
             //Compositor.Dispatcher.Invoke(()=>Position = newPosition);
-            this.Server.Position = newPosition;
+            Compositor.Dispatcher.Invoke(() => this.Position = newPosition, DispatcherPriority.BeforeRender);
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
             //OnPropertyChanged(nameof(Position), isSubPropertyChange: false);
         }
