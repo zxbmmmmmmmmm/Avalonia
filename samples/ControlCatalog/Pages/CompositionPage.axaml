@@ -76,9 +76,11 @@
             </DockPanel>
         </TabItem>
         <TabItem Header="Interaction">
-            <StackPanel Spacing="20">
+            <Canvas>
                 <Border
                     x:Name="border1"
+                    Canvas.Left="120"
+                    Canvas.Top="120"
                     Width="100"
                     Height="100"
                     Background="Red" />
@@ -88,7 +90,7 @@
                     Height="100"
                     Background="Blue" />
                 <TextBlock x:Name="logTB" />
-            </StackPanel>
+            </Canvas>
         </TabItem>
     </TabControl>
 </UserControl>
