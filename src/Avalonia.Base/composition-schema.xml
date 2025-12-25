@@ -58,8 +58,8 @@
         <Property Name="PixelSize" Type="PixelSize" />
     </Object>
     <Object Name="InteractionTracker">
-        <Property Name="Position" Type="Vector3D"/>
-        <Property Name="Scale" Type="double" DefaultValue="1"/>
+        <Property Name="Position" Type="Vector3D" Animated="true"/>
+        <Property Name="Scale" Type="double" DefaultValue="1" Animated="true"/>
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
     <KeyFrameAnimation Name="Double" Type="double"/>
