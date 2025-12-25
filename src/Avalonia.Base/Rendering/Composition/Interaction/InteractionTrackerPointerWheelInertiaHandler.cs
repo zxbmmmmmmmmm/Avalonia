@@ -63,19 +63,18 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
         {
             _interactionTracker.SetPosition(FinalModifiedPosition, requestId: 0);
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
-            _stopwatch!.Stop();
+            Stop();
             return;
         }
 
         var newPosition = _initialPosition + Vector3D.Multiply(InitialVelocity, (currentElapsed / 1000.0)) ;// TODO: 实现速度曲线以支持惯性
-        //var clampedNewPosition = Vector3D.Clamp(newPosition, _minPosition, _maxPosition);
-        // TODO: fix clamp
-        _interactionTracker.SetPosition(newPosition, requestId: 0);
+        var clampedNewPosition = Vector3D.Clamp(newPosition, _minPosition, _maxPosition);
+        _interactionTracker.SetPosition(clampedNewPosition, requestId: 0);
 
         if (newPosition.Equals(FinalModifiedPosition))
         {
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
-            _stopwatch!.Stop();
+            Stop();
         }
     }
 }

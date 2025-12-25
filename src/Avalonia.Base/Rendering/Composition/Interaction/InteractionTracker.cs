@@ -1,7 +1,10 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Styling;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -29,10 +32,12 @@ public partial class InteractionTracker : CompositionObject
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
 
-    internal void SetPosition(Vector3D newPosition, int requestId)
+    internal void SetPosition(Vector3D newPosition, int requestId, [CallerMemberName]string m="")
     {
         if (Position != newPosition)
         {
+            Debug.WriteLine($"{m} SetPosition {newPosition}");
+            //Compositor.Dispatcher.Invoke(()=>Position = newPosition);
             this.Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
             //OnPropertyChanged(nameof(Position), isSubPropertyChange: false);
