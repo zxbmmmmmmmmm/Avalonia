@@ -78,7 +78,22 @@ internal sealed class InteractionTrackerInertiaState : InteractionTrackerState
         var newDelta = isHorizontal ? new Vector3D(delta, 0, 0) : new Vector3D(0, delta, 0);
         var totalDelta = (_handler.FinalModifiedPosition - _interactionTracker.Position) + newDelta;
         // Constant velocity for 250ms
-        var velocity = Vector3D.Divide(totalDelta,0.25);
+        var targetVelocity = Vector3D.Divide(totalDelta, 0.25);       
+        Vector3D velocity;
+
+        if (_handler is InteractionTrackerPointerWheelInertiaHandler pw)
+        {
+            var isOpposite = Vector3D.Dot(newDelta, pw.Velocity) < 0;
+
+            velocity = isOpposite
+                ? targetVelocity
+                : Vector3D.Add(pw.Velocity, targetVelocity);
+        }
+        else
+        {
+            velocity = targetVelocity;
+        }
+
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocity, requestId: 0, isFromPointerWheel: true));
         _handler.Stop();
     }

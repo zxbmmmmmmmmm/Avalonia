@@ -20,7 +20,7 @@ public partial class CompositionPage : UserControl
     private ImplicitAnimationCollection? _implicitAnimations;
     private CompositionCustomVisual? _customVisual;
     private CompositionSolidColorVisual? _solidVisual;
-
+    private bool _attached = false;
     public CompositionPage()
     {
         InitializeComponent();
@@ -29,19 +29,23 @@ public partial class CompositionPage : UserControl
         border1.Loaded += (s, e) =>
         {
             AttachInteraction();
+            _attached = true;
         };
     }
 
     private void AttachInteraction()
     {
+        if (_attached)
+            return;
         var border1Visual = ElementComposition.GetElementVisual(border1);
         var border2Visual = ElementComposition.GetElementVisual(border2);
+        var border3Visual = ElementComposition.GetElementVisual(border3);
         var compositor = border1Visual.Compositor;
         var tracker = compositor.CreateInteractionTracker();
 
         tracker.MinPosition = new Vector3D(0,0,0);
-        tracker.MaxPosition = new Vector3D(500, 500, 0);
-
+        tracker.MaxPosition = new Vector3D(interactionCanvas.DesiredSize.Width - border2.DesiredSize.Width, interactionCanvas.DesiredSize.Height - border2.DesiredSize.Height, 0);
+        
         // On non-Skia (e.g, Android), the Visual CompositionTarget is set from XamlRoot.
         // So, we need to call GetElementVisual on Loaded. Otherwise, it won't work.
         // NOTE: The sample still doesn't work on platforms other than Skia
@@ -52,8 +56,11 @@ public partial class CompositionPage : UserControl
         //_interactionSource.PositionYSourceMode = InteractionSourceMode.EnabledWithInertia;
 
         var animation = compositor.CreateExpressionAnimation("Vector3(tracker.Position.X, tracker.Position.Y, tracker.Position.Z)");// TODO: Z->Scalar?
+        var animation2 = compositor.CreateExpressionAnimation("Vector3(tracker.Position.Y, tracker.Position.X, tracker.Position.Z)");// TODO: Z->Scalar?
         animation.SetReferenceParameter("tracker", tracker);
+        animation2.SetReferenceParameter("tracker", tracker);
         border2Visual.StartAnimation("Offset", animation);
+        border3Visual.StartAnimation("Offset", animation2);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

@@ -12,13 +12,20 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
     // > InteractionTracker was built to utilize the new Animation engine that operates on an independent thread at 60 FPS,resulting in smooth motion.
     //private const int IntervalInMilliseconds = 17; // Ceiling of 1000/60
 
-    private Stopwatch? _stopwatch;
+    private const double StopVelocityThreshold = 2.0;
+    private const double HalfLifeSeconds = 0.12; // Time for velocity to halve; yields ~95% decay in ~0.4s
+    private const double MaxDurationSeconds = 1.0;
+    private const double Epsilon = 0.0001;
 
-    private readonly InteractionTracker _interactionTracker;
+    private readonly Vector3D _initialVelocity;
     private readonly Vector3D _minPosition;
     private readonly Vector3D _maxPosition;
     private readonly Vector3D _initialPosition;
     private readonly Vector3D _calculatedFinalPosition;
+    private readonly double _timeConstantSeconds;
+
+    private Stopwatch? _stopwatch;
+    private readonly InteractionTracker _interactionTracker;
 
     public InteractionTrackerPointerWheelInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities)
         : base(serverCompositor)
@@ -28,17 +35,22 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
         _maxPosition = interactionTracker.MaxPosition;
         _initialPosition = _interactionTracker.Position;
 
-        InitialVelocity = translationVelocities;
+        _timeConstantSeconds = HalfLifeSeconds / Math.Log(2.0);
 
-        // This handler works with constant velocity for 0.25 second.
-        _calculatedFinalPosition = interactionTracker.Position + InitialVelocity * 0.25f;
+        _initialVelocity = translationVelocities;
+        Velocity = translationVelocities;
+
+        // Natural final (unclamped) resting position for exponential decay.
+        _calculatedFinalPosition = _initialPosition + _initialVelocity * _timeConstantSeconds;
     }
 
-    public Vector3D InitialVelocity { get; }
+    public Vector3D InitialVelocity => _initialVelocity;
 
-    public Vector3D FinalPosition => Vector3D.Clamp(_calculatedFinalPosition, _minPosition, _maxPosition);
+    public Vector3D Velocity { get; private set; }
 
-    public Vector3D FinalModifiedPosition => FinalPosition;
+    public Vector3D FinalPosition => _calculatedFinalPosition;
+
+    public Vector3D FinalModifiedPosition => Vector3D.Clamp(_calculatedFinalPosition, _minPosition, _maxPosition);
 
     public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
@@ -54,24 +66,25 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
         _stopwatch?.Stop();
     }
 
-
     public void OnTick()
     {
-        var currentElapsed = _stopwatch!.ElapsedMilliseconds;
+        var elapsedSeconds = _stopwatch!.ElapsedMilliseconds / 1000.0;
 
-        if (currentElapsed >= 250)
-        {
-            _interactionTracker.SetPosition(FinalModifiedPosition, requestId: 0);
-            _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
-            Stop();
-            return;
-        }
+        // Exponential decay: v(t) = v0 * e^(-t/τ); x(t) = x0 + v0 * τ * (1 - e^(-t/τ))
+        var decay = Math.Exp(-elapsedSeconds / _timeConstantSeconds);
+        var currentVelocity = _initialVelocity * decay;
+        Velocity = currentVelocity;
 
-        var newPosition = _initialPosition + Vector3D.Multiply(InitialVelocity, (currentElapsed / 1000.0)) ;// TODO: 实现速度曲线以支持惯性
+        var newPosition = _initialPosition + _initialVelocity * _timeConstantSeconds * (1 - decay);
         var clampedNewPosition = Vector3D.Clamp(newPosition, _minPosition, _maxPosition);
+
         _interactionTracker.SetPosition(clampedNewPosition, requestId: 0);
 
-        if (newPosition.Equals(FinalModifiedPosition))
+        var hasStoppedByVelocity = Math.Abs(currentVelocity.Length) <= StopVelocityThreshold;
+        var hasReachedTarget = Vector3D.DistanceSquared(clampedNewPosition, FinalModifiedPosition) < Epsilon;
+        var hasTimedOut = elapsedSeconds >= MaxDurationSeconds;
+
+        if (hasStoppedByVelocity || hasReachedTarget || hasTimedOut)
         {
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
             Stop();
