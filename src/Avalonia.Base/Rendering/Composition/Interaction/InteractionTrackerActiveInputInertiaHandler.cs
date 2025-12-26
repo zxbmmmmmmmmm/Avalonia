@@ -57,7 +57,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
         {
             _interactionTracker.SetPosition(FinalModifiedPosition, _requestId);
             _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, _requestId));
-            _stopwatch!.Stop();
+            Stop();
             return;
         }
 
