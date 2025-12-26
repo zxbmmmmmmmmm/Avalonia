@@ -27,9 +27,17 @@ public partial class InteractionTracker : CompositionObject
 
     public Vector3D? PositionInertiaDecayRate { get; set; }
 
+    public Vector3D Position => Server.Position;
 
-    partial void InitializeDefaultsExtra()
+    public double Scale => Server.Scale;
+
+
+    internal new ServerInteractionTracker Server { get; }
+
+    internal InteractionTracker(Compositor compositor, ServerInteractionTracker server) : base(compositor, server)
     {
+        Server = (ServerInteractionTracker)server;
+        Server.Activate();
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
 
@@ -39,7 +47,7 @@ public partial class InteractionTracker : CompositionObject
         {
             Debug.WriteLine($"{m} SetPosition {newPosition}");
             //Compositor.Dispatcher.Invoke(()=>Position = newPosition);
-            Compositor.Dispatcher.Invoke(() => this.Position = newPosition, DispatcherPriority.BeforeRender);
+            this.Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
             //OnPropertyChanged(nameof(Position), isSubPropertyChange: false);
         }
@@ -84,7 +92,7 @@ public partial class InteractionTracker : CompositionObject
         => TryUpdatePosition(value, InteractionTrackerClampingOption.Auto);
 
     public int TryUpdatePositionBy(Vector3D amount)
-        => TryUpdatePosition(Position + amount);
+        => TryUpdatePosition(Server.Position + amount);
 
     public int TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option)
     {
@@ -94,5 +102,5 @@ public partial class InteractionTracker : CompositionObject
     }
 
     public int TryUpdatePositionBy(Vector3D amount, InteractionTrackerClampingOption option)
-        => TryUpdatePosition(Position + amount, option);
+        => TryUpdatePosition(Server.Position + amount, option);
 }
