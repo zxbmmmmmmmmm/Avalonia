@@ -46,6 +46,7 @@ public class InputElementInteractionSource
         }
 
         _pointer = e.Pointer;
+        e.PreventGestureRecognition();
         _pressedPosition = e.GetPosition(_inputElement);
         _lastPosition = _pressedPosition;
         _velocityTracker = new VelocityTracker();
@@ -96,6 +97,8 @@ public class InputElementInteractionSource
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
+        Debug.WriteLine($"Pointer Lost");
+
         if (_pointer == e.Pointer)
         {
             _tracker.CompleteUserManipulation(default);

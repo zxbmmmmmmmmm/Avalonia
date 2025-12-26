@@ -36,7 +36,7 @@ public partial class InteractionTracker : CompositionObject
 
     internal InteractionTracker(Compositor compositor, ServerInteractionTracker server) : base(compositor, server)
     {
-        Server = (ServerInteractionTracker)server;
+        Server = server;
         Server.Activate();
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
@@ -45,11 +45,8 @@ public partial class InteractionTracker : CompositionObject
     {
         if (Position != newPosition)
         {
-            Debug.WriteLine($"{m} SetPosition {newPosition}");
-            //Compositor.Dispatcher.Invoke(()=>Position = newPosition);
             this.Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
-            //OnPropertyChanged(nameof(Position), isSubPropertyChange: false);
         }
     }
 
