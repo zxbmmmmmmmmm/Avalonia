@@ -6,7 +6,7 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition;
 
-internal sealed partial class InteractionTrackerActiveInputInertiaHandler :ServerObject, IServerClockItem, IInteractionTrackerInertiaHandler
+internal sealed partial class InteractionTrackerActiveInputInertiaHandler : ServerObject, IServerClockItem, IInteractionTrackerInertiaHandler
 {
     private readonly InteractionTracker _interactionTracker;
     private readonly AxisHelper _xHelper;
@@ -27,7 +27,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
     public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
     public InteractionTrackerActiveInputInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities, int requestId)
-        :base(serverCompositor)
+        : base(serverCompositor)
     {
         _interactionTracker = interactionTracker;
         _xHelper = new AxisHelper(this, translationVelocities, Axis.X);
@@ -40,7 +40,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
     {
         Compositor.Animations.AddToClock(this);
         _stopwatch = Stopwatch.StartNew();
-        
+
     }
 
     public void Stop()
@@ -96,10 +96,25 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
             Axis = axis;
             Handler = handler;
             InitialVelocity = GetValue(velocities);
-            DecayRate = 1.0 - GetValue(Handler._interactionTracker.PositionInertiaDecayRate ?? new(0.95,0.95,0.95));
+            DecayRate = 1.0 - GetValue(Handler._interactionTracker.PositionInertiaDecayRate ?? new(0.95, 0.95, 0.95));
             InitialValue = GetValue(Handler._interactionTracker.Position);
 
             TimeToMinimumVelocity = GetTimeToMinimumVelocity();
+
+            var min = GetValue(Handler._interactionTracker.MinPosition);
+            var max = GetValue(Handler._interactionTracker.MaxPosition);
+
+            if (InitialValue < min || InitialValue > max)
+            {
+
+                double wn = -Math.Log(DecayRate);
+                double settlingTimeBasedOnDecay = 5.8335 / 2 / wn;
+
+                if (TimeToMinimumVelocity < settlingTimeBasedOnDecay)
+                {
+                    TimeToMinimumVelocity = settlingTimeBasedOnDecay;
+                }
+            }
 
             var deltaPosition = CalculateDeltaPosition(TimeToMinimumVelocity);
 
@@ -120,7 +135,6 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
 
         private double GetTimeToMinimumVelocity()
         {
-            var epsilon = 0.0000011920929f;
 
             var minimumVelocity = 30.0f;
 
@@ -131,9 +145,9 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
                 var time = 0.0;
                 if (initialVelocity > minimumVelocity)
                 {
-                    if (!CompositionMathHelpers.IsCloseReal(decayRate, 1.0f, epsilon))
+                    if (!CompositionMathHelpers.IsCloseReal(decayRate, 1.0))
                     {
-                        if (CompositionMathHelpers.IsCloseRealZero(decayRate, epsilon) /*|| !_isInertiaEnabled*/)
+                        if (CompositionMathHelpers.IsCloseRealZero(decayRate) /*|| !_isInertiaEnabled*/)
                         {
                             return 0.0f;
                         }
@@ -157,13 +171,11 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
 
         private double CalculateDeltaPosition(double time)
         {
-            double epsilon = 0.0000011920929;
-
-            if (CompositionMathHelpers.IsCloseReal(DecayRate, 1.0f, epsilon))
+            if (CompositionMathHelpers.IsCloseReal(DecayRate, 1.0f))
             {
                 return InitialVelocity * time;
             }
-            else if (CompositionMathHelpers.IsCloseRealZero(DecayRate, epsilon) /*|| !_isInertiaEnabled*/)
+            else if (CompositionMathHelpers.IsCloseRealZero(DecayRate) /*|| !_isInertiaEnabled*/)
             {
                 return 0.0f;
             }
@@ -211,11 +223,11 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler :Serve
 internal static class CompositionMathHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsCloseReal(double a, double b, double epsilon = 10.0 * double.Epsilon)
+    internal static bool IsCloseReal(double a, double b, double epsilon = double.Epsilon)
         => Math.Abs(a - b) <= epsilon;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsCloseRealZero(double a, double epsilon = 10.0 * double.Epsilon)
+    internal static bool IsCloseRealZero(double a, double epsilon = double.Epsilon)
         => Math.Abs(a) < epsilon;
 }
 

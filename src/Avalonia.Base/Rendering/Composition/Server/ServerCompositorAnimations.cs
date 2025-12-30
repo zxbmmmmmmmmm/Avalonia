@@ -8,6 +8,7 @@ internal class ServerCompositorAnimations
     private readonly List<IServerClockItem> _clockItemsToUpdate = new();
     private readonly HashSet<ServerObjectAnimations> _dirtyAnimatedObjects = new();
     private readonly Queue<ServerObjectAnimations> _dirtyAnimatedObjectQueue = new();
+    private readonly object _dirtyAnimatedObjectsLock = new();
 
     public void AddToClock(IServerClockItem item) =>
         _clockItems.Add(item);
@@ -25,14 +26,20 @@ internal class ServerCompositorAnimations
 
         _clockItemsToUpdate.Clear();
 
-        while (_dirtyAnimatedObjectQueue.Count > 0)
-            _dirtyAnimatedObjectQueue.Dequeue().EvaluateAnimations();
-        _dirtyAnimatedObjects.Clear();
+        lock (_dirtyAnimatedObjectsLock)
+        {
+            while (_dirtyAnimatedObjectQueue.Count > 0)
+                _dirtyAnimatedObjectQueue.Dequeue().EvaluateAnimations();
+            _dirtyAnimatedObjects.Clear();
+        }
     }
 
     public void AddDirtyAnimatedObject(ServerObjectAnimations obj)
     {
-        if (_dirtyAnimatedObjects.Add(obj))
-            _dirtyAnimatedObjectQueue.Enqueue(obj);
+        lock (_dirtyAnimatedObjectsLock)
+        {
+            if (_dirtyAnimatedObjects.Add(obj))
+                _dirtyAnimatedObjectQueue.Enqueue(obj);
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 
 namespace Avalonia.Rendering.Composition;
+
 internal sealed class InteractionTrackerInteractingState : InteractionTrackerState
 {
     public InteractionTrackerInteractingState(InteractionTracker interactionTracker) : base(interactionTracker)
@@ -28,7 +29,8 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
 
     internal override void CompleteUserManipulation(Vector3D linearVelocity)
     {
-        _interactionTracker.ChangeState(new InteractionTrackerIdleState(_interactionTracker, requestId: 0));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, linearVelocity, requestId: 0, false));
+
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)

@@ -97,13 +97,7 @@ public class InputElementInteractionSource
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
-        Debug.WriteLine($"Pointer Lost");
 
-        if (_pointer == e.Pointer)
-        {
-            _tracker.CompleteUserManipulation(default);
-            Reset();
-        }
     }
 
     private void Reset()
