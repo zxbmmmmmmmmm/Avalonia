@@ -31,6 +31,7 @@ public partial class InteractionTracker : CompositionObject
 
     public double Scale => Server.Scale;
 
+    private int _count = 0;
 
     internal new ServerInteractionTracker Server { get; }
 
@@ -45,13 +46,15 @@ public partial class InteractionTracker : CompositionObject
     {
         if (Position != newPosition)
         {
-            this.Server.Position = newPosition;
+            Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
         }
     }
 
     internal void ChangeState(InteractionTrackerState newState)
     {
+        Interlocked.Increment(ref _count);
+        Debug.WriteLine($"{_count}:{_state.GetType().Name.Replace("InteractionTracker","")} -> {newState.GetType().Name.Replace("InteractionTracker", "")}");
         _state = newState;
     }
 
