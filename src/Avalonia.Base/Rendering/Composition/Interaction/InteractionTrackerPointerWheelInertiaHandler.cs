@@ -13,7 +13,7 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
     //private const int IntervalInMilliseconds = 17; // Ceiling of 1000/60
 
     private const double StopVelocityThreshold = 2.0;
-    private const double HalfLifeSeconds = 0.12; // Time for velocity to halve; yields ~95% decay in ~0.4s
+    private const double HalfLifeSeconds = 0.08; // Time for velocity to halve; yields ~95% decay in ~0.4s
     private const double MaxDurationSeconds = 1.0;
     private const double Epsilon = 0.0001;
 
