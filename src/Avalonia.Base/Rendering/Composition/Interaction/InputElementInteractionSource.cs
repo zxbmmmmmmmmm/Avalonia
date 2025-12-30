@@ -88,17 +88,17 @@ public class InputElementInteractionSource
 
         var position = e.GetPosition(_inputElement);
         var delta = position - _lastPosition;
-
+        if (PositionXSourceMode is InteractionSourceMode.Disabled)
+        {
+            delta = delta.WithX(0);
+        }
+        if (PositionYSourceMode is InteractionSourceMode.Disabled)
+        {
+            delta = delta.WithY(0);
+        }
         if (delta != default)
         {
-            if (PositionXSourceMode is InteractionSourceMode.Disabled)
-            {
-                delta = delta.WithX(0);
-            }
-            if (PositionYSourceMode is InteractionSourceMode.Disabled)
-            {
-                delta = delta.WithY(0);
-            }
+
             _tracker.ReceiveManipulationDelta(delta);
             _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), delta);
             _lastPosition = position;

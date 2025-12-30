@@ -9,6 +9,7 @@ using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -950,15 +951,42 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     public void ValuesChanged(InteractionTracker sender, InteractionTrackerValuesChangedArgs args)
     {
         if (args.RequestId != 0 && requestId.HasValue && args.RequestId <= requestId)
+        {
             return;
-        try
-        {
-            _compositionUpdate = true;
-            SetCurrentValue(OffsetProperty, new Vector(args.Position.X, args.Position.Y));
         }
-        finally
+
+        var position = new Vector(args.Position.X, args.Position.Y);
+
+        void ApplyOffset()
         {
-            _compositionUpdate = false;
+            if (args.RequestId != 0 && requestId.HasValue && args.RequestId <= requestId)
+            {
+                return;
+            }
+
+            if (_interactionTracker != sender)
+            {
+                return;
+            }
+
+            try
+            {
+                _compositionUpdate = true;
+                SetCurrentValue(OffsetProperty, position);
+            }
+            finally
+            {
+                _compositionUpdate = false;
+            }
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            ApplyOffset();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(ApplyOffset, DispatcherPriority.Render);
         }
     }
 
