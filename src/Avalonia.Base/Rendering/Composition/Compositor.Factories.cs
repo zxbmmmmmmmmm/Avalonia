@@ -39,5 +39,11 @@ public partial class Compositor
 
     public CompositionDrawingSurface CreateDrawingSurface() => new(this);
 
-    public InteractionTracker CreateInteractionTracker() => new(this, new ServerInteractionTracker(_server));
+    public InteractionTracker CreateInteractionTracker() => CreateInteractionTracker(null);
+
+    public InteractionTracker CreateInteractionTracker(IInteractionTrackerOwner? owner) =>
+        new(this, new ServerInteractionTracker(_server))
+        {
+            Owner = owner
+        };
 }
