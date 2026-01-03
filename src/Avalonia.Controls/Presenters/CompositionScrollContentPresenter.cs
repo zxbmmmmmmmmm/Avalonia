@@ -952,20 +952,12 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
     public void ValuesChanged(InteractionTracker sender, InteractionTrackerValuesChangedArgs args)
     {
-        if (args.RequestId != 0 && requestId.HasValue && args.RequestId <= requestId)
-        {
-            return;
-        }
+        UpdateScrollAnimation();
 
         var position = new Vector(args.Position.X, args.Position.Y);
 
         void ApplyOffset()
         {
-            if (args.RequestId != 0 && requestId.HasValue && args.RequestId <= requestId)
-            {
-                return;
-            }
-
             if (_interactionTracker != sender)
             {
                 return;
@@ -1004,12 +996,14 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     public void InertiaStateEntered(InteractionTracker sender, InteractionTrackerInertiaStateEnteredArgs args)
     {
         _inertiaArgs = args;
+        UpdateScrollAnimation();
         UpdateScrollModified();
     }
 
     public void InteractingStateEntered(InteractionTracker sender, InteractionTrackerInteractingStateEnteredArgs args)
     {
         _inertiaArgs = null;
+        UpdateScrollAnimation();
     }
 
     private void EnsureScrollAnimation()
