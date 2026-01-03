@@ -356,6 +356,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         base.OnDetachedFromVisualTree(e);
         _interactionTracker?.Dispose();
         _interactionTracker = null;
+        _interactionSource?.Dispose();
+        _interactionSource = null;
         _scrollAnimation?.Dispose();
         _scrollAnimation = null;
     }
