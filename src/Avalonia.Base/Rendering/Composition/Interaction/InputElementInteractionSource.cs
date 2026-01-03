@@ -77,6 +77,7 @@ public class InputElementInteractionSource : IDisposable
         _velocityTracker.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), default);
         _pointer.Capture(_inputElement);
         _tracker.StartUserManipulation();
+        e.Handled = true;
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -100,9 +101,11 @@ public class InputElementInteractionSource : IDisposable
         {
 
             _tracker.ReceiveManipulationDelta(delta);
-            _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), delta);
+            _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), position - _pressedPosition);
             _lastPosition = position;
         }
+        e.Handled = true;
+
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -132,6 +135,8 @@ public class InputElementInteractionSource : IDisposable
 
         _pointer.Capture(null);
         Reset();
+        e.Handled = true;
+
     }
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
