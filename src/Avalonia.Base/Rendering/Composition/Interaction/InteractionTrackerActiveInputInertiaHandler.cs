@@ -194,6 +194,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
                 return FinalModifiedValue;
             }
 
+
             if (_dampingStateTimeInSeconds.HasValue)
             {
                 var settlingTime = TimeToMinimumVelocity - _dampingStateTimeInSeconds.Value;
@@ -216,7 +217,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
                 return value;
             }
 
-            var currentPosition = GetValue(Handler._interactionTracker.Position);
+            var currentPosition = InitialValue + CalculateDeltaPosition(currentElapsedInSeconds);
             var minPosition = GetValue(Handler._interactionTracker.MinPosition);
             var maxPosition = GetValue(Handler._interactionTracker.MaxPosition);
             if (currentPosition < minPosition || currentPosition > maxPosition)
@@ -226,7 +227,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
                 _dampingStatePosition = currentPosition;
             }
 
-            return InitialValue + CalculateDeltaPosition(currentElapsedInSeconds);
+            return currentPosition;
         }
     }
 }
