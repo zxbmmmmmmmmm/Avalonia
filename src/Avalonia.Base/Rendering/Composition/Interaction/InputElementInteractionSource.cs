@@ -6,7 +6,7 @@ using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Rendering.Composition;
 
-public class InputElementInteractionSource
+public class InputElementInteractionSource : IDisposable
 {
     /// <summary>
     /// Defines how interactions are processed for an <see cref="VisualInteractionSource"/> on the scale axis.
@@ -145,6 +145,15 @@ public class InputElementInteractionSource
         _velocityTracker = null;
         _pressedPosition = default;
         _lastPosition = default;
+    }
+
+    public void Dispose()
+    {
+        _inputElement.PointerPressed -= OnPointerPressed;
+        _inputElement.PointerMoved -= OnPointerMoved;
+        _inputElement.PointerReleased -= OnPointerReleased;
+        _inputElement.PointerCaptureLost -= OnPointerCaptureLost;
+        _inputElement.PointerWheelChanged -= OnPointerWheelChanged;
     }
 }
 
