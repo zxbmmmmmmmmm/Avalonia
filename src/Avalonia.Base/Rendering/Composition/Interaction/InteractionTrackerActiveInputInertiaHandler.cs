@@ -198,11 +198,22 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
             {
                 var settlingTime = TimeToMinimumVelocity - _dampingStateTimeInSeconds.Value;
                 var wn = 5.8335 / settlingTime;
-                // It seems WinUI can use an underdamped animation in some cases. For now we only use critically damped animation.
-                var value = DampingHelper.SolveCriticallyDamped(wn, currentElapsedInSeconds - _dampingStateTimeInSeconds.Value);
-                value = value * (FinalModifiedValue - _dampingStatePosition!.Value) + _dampingStatePosition.Value;
+                var elapsedInDamping = currentElapsedInSeconds - _dampingStateTimeInSeconds.Value;
 
-                return (float)value;
+                // It seems WinUI can use an underdamped animation in some cases. For now we only use critically damped animation.
+                var progress = DampingHelper.SolveCriticallyDamped(wn, elapsedInDamping);
+                var finalProgress = DampingHelper.SolveCriticallyDamped(wn, settlingTime);
+
+                if (!CompositionMathHelpers.IsCloseRealZero(finalProgress))
+                {
+                    progress /= finalProgress;
+                }
+
+                progress = Math.Clamp(progress, 0.0, 1.0);
+
+                var value = progress * (FinalModifiedValue - _dampingStatePosition!.Value) + _dampingStatePosition.Value;
+
+                return value;
             }
 
             var currentPosition = GetValue(Handler._interactionTracker.Position);
