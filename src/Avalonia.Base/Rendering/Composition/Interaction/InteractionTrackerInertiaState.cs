@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using Avalonia.Input;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -55,13 +56,13 @@ internal sealed class InteractionTrackerInertiaState : InteractionTrackerState
         _handler.Start();
     }
 
-    internal override void StartUserManipulation()
+    internal override void StartUserManipulation(Point position, IPointer pointer)
     {
         _interactionTracker.ChangeState(new InteractionTrackerInteractingState(_interactionTracker));
         _handler.Stop();
     }
 
-    internal override void CompleteUserManipulation(Vector3D linearVelocity)
+    internal override void CompleteUserManipulation()
     {
     }
 

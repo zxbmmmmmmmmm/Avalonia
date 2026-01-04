@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Avalonia.Input;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -17,9 +18,9 @@ public partial class InteractionTracker : CompositionObject
 
     private InteractionTrackerState _state = null!;
 
-    public float MinScale { get; set; } = 1.0f;
+    public double MinScale { get; set; } = 1.0;
 
-    public float MaxScale { get; set; } = 1.0f;
+    public double MaxScale { get; set; } = 1.0;
 
     public Vector3D MinPosition { get; set; }
 
@@ -42,13 +43,19 @@ public partial class InteractionTracker : CompositionObject
         _state = new InteractionTrackerIdleState(this, 0, isInitialIdleState: true);
     }
 
-    internal void SetPosition(Vector3D newPosition, int requestId, [CallerMemberName]string m="")
+    internal void SetPosition(Vector3D newPosition, int requestId)
     {
         if (Position != newPosition)
         {
             Server.Position = newPosition;
             Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
         }
+    }
+
+    internal void SetScale(double newScale, int requestId)
+    {
+        Server.Scale = newScale;
+        Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(Position, newScale, requestId));
     }
 
     internal void ChangeState(InteractionTrackerState newState)
@@ -58,14 +65,14 @@ public partial class InteractionTracker : CompositionObject
         _state = newState;
     }
 
-    internal void StartUserManipulation()
+    internal void StartUserManipulation(Point position, IPointer pointer)
     {
-        _state.StartUserManipulation();
+        _state.StartUserManipulation(position, pointer);
     }
 
-    internal void CompleteUserManipulation(Vector3D linearVelocity)
+    internal void CompleteUserManipulation()
     {
-        _state.CompleteUserManipulation(-linearVelocity);
+        _state.CompleteUserManipulation();
     }
 
     internal void ReceiveManipulationDelta(Point translationDelta)

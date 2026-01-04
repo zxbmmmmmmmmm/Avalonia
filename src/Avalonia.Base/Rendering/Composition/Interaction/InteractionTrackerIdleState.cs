@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Avalonia.Input;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -22,12 +23,12 @@ internal sealed class InteractionTrackerIdleState : InteractionTrackerState
         }
     }
 
-    internal override void StartUserManipulation()
+    internal override void StartUserManipulation(Point position, IPointer pointer)
     {
         _interactionTracker.ChangeState(new InteractionTrackerInteractingState(_interactionTracker));
     }
 
-    internal override void CompleteUserManipulation(Vector3D linearVelocity)
+    internal override void CompleteUserManipulation()
     {
     }
 

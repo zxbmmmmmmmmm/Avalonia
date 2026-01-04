@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Avalonia.Input;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering.Composition;
@@ -14,8 +15,8 @@ internal abstract class InteractionTrackerState
     }
 
     protected abstract void EnterState(IInteractionTrackerOwner? owner);
-    internal abstract void StartUserManipulation();
-    internal abstract void CompleteUserManipulation(Vector3D linearVelocity);
+    internal abstract void StartUserManipulation(Point position, IPointer pointer);
+    internal abstract void CompleteUserManipulation();
     internal abstract void ReceiveManipulationDelta(Point translationDelta);
     internal abstract void ReceiveInertiaStarting(Point linearVelocity);
     internal abstract void ReceivePointerWheel(int delta, bool isHorizontal);
