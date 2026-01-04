@@ -76,7 +76,7 @@ public class InputElementInteractionSource : IDisposable
         _velocityTracker = new VelocityTracker();
         _velocityTracker.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), default);
         _pointer.Capture(_inputElement);
-        _tracker.StartUserManipulation();
+        _tracker.StartUserManipulation(_pressedPosition, e.Pointer);
         e.Handled = true;
     }
 
@@ -130,7 +130,7 @@ public class InputElementInteractionSource : IDisposable
         }
         else
         {
-            _tracker.CompleteUserManipulation(default);
+            _tracker.CompleteUserManipulation();
         }
 
         _pointer.Capture(null);

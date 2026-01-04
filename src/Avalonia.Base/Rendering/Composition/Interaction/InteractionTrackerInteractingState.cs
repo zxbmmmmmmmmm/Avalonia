@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using Avalonia.Input;
 
 namespace Avalonia.Rendering.Composition;
 
@@ -17,7 +18,7 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
         owner?.InteractingStateEntered(_interactionTracker, new InteractionTrackerInteractingStateEnteredArgs(requestId: 0, isFromBinding: false));
     }
 
-    internal override void StartUserManipulation()
+    internal override void StartUserManipulation(Point position, IPointer pointer)
     {
         // This probably shouldn't happen.
         // We ignore.
@@ -27,10 +28,9 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
         //}
     }
 
-    internal override void CompleteUserManipulation(Vector3D linearVelocity)
+    internal override void CompleteUserManipulation()
     {
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, linearVelocity, requestId: 0, false));
-
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, default, requestId: 0, false));
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)
