@@ -419,6 +419,7 @@ return;
         {
             "bool",
             "float",
+            "double",
             "Vector2",
             "Vector3",
             "Vector4",
