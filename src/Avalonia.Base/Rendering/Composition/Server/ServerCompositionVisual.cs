@@ -22,6 +22,11 @@ namespace Avalonia.Rendering.Composition.Server
         private LtrbRect? _transformedClipBounds;
         private LtrbRect _combinedTransformedClipBounds;
 
+        partial void Initialize()
+        {
+            _scale = new(1, 1, 1);
+        }
+
         protected virtual void RenderCore(ServerVisualRenderContext canvas, LtrbRect currentTransformedClip)
         {
         }
