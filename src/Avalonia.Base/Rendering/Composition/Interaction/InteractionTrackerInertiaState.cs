@@ -66,6 +66,10 @@ internal sealed class InteractionTrackerInertiaState : InteractionTrackerState
     {
     }
 
+    internal override void ReceiveScale(Point origin, double scale)
+    {
+    }
+
     internal override void ReceiveManipulationDelta(Point translationDelta)
     {
     }

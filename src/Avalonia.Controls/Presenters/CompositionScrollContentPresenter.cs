@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Interactivity;
@@ -96,11 +97,35 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
         ScrollViewer.IsScrollChainingEnabledProperty.AddOwner<CompositionScrollContentPresenter>();
 
-    
+    /// <summary>
+    /// Defines the <see cref="MinZoomFactor"/> property.
+    /// </summary>
+    public static readonly StyledProperty<double> MinZoomFactorProperty =
+        AvaloniaProperty.Register<CompositionScrollContentPresenter, double>(nameof(MinZoomFactor), 0.1);
+
+    /// <summary>
+    /// Defines the <see cref="MaxZoomFactor"/> property.
+    /// </summary>
+    public static readonly StyledProperty<double> MaxZoomFactorProperty =
+        AvaloniaProperty.Register<CompositionScrollContentPresenter, double>(nameof(MaxZoomFactor), 10.0);
+
+    /// <summary>
+    /// Defines the <see cref="ZoomFactor"/> property.
+    /// </summary>
+    public static readonly StyledProperty<double> ZoomFactorProperty =
+        AvaloniaProperty.Register<CompositionScrollContentPresenter, double>(nameof(ZoomFactor), 1.0);
+
+    /// <summary>
+    /// Defines the <see cref="IsZoomEnabled"/> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsZoomEnabledProperty =
+        AvaloniaProperty.Register<CompositionScrollContentPresenter, bool>(nameof(IsZoomEnabled), true);
+
+
     //private ScrollFeaturesEnum _scrollFeatures = ScrollFeaturesEnum.None;
     private InteractionTracker? _interactionTracker;
     private InputElementInteractionSource? _interactionSource;
-    private ExpressionAnimation? _scrollAnimation;
+    private CompositionAnimationGroup? _animationGroup;
     private bool _compositionUpdate;
     private long? requestId;
     private bool _arranging;
@@ -246,6 +271,42 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         set => SetValue(IsScrollChainingEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the minimum zoom factor.
+    /// </summary>
+    public double MinZoomFactor
+    {
+        get => GetValue(MinZoomFactorProperty);
+        set => SetValue(MinZoomFactorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum zoom factor.
+    /// </summary>
+    public double MaxZoomFactor
+    {
+        get => GetValue(MaxZoomFactorProperty);
+        set => SetValue(MaxZoomFactorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the current zoom factor.
+    /// </summary>
+    public double ZoomFactor
+    {
+        get => GetValue(ZoomFactorProperty);
+        set => SetValue(ZoomFactorProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether zooming is enabled.
+    /// </summary>
+    public bool IsZoomEnabled
+    {
+        get => GetValue(IsZoomEnabledProperty);
+        set => SetValue(IsZoomEnabledProperty, value);
+    }
+
     /// <inheritdoc/>
     Control? IScrollAnchorProvider.CurrentAnchor
     {
@@ -346,6 +407,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
         var compositionVisual = ElementComposition.GetElementVisual(this);
         _interactionTracker = compositionVisual!.Compositor.CreateInteractionTracker(this);
+        _interactionTracker.MinScale = MinZoomFactor;
+        _interactionTracker.MaxScale = MaxZoomFactor;
         _interactionSource = new InputElementInteractionSource(this, _interactionTracker);
         UpdateScrollAnimation();
         UpdateInteractionOptions();
@@ -358,8 +421,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         _interactionTracker = null;
         _interactionSource?.Dispose();
         _interactionSource = null;
-        _scrollAnimation?.Dispose();
-        _scrollAnimation = null;
+        _animationGroup?.Dispose();
+        _animationGroup = null;
     }
 
     /// <summary>
@@ -524,12 +587,10 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         }
 
         Viewport = finalSize;
-        Extent = ComputeExtent(finalSize);
         _isAnchorElementDirty = true;
 
-        var scrollableHeight = Extent.Height - Viewport.Height;
-        var scrollableWidth = Extent.Width - Viewport.Width;
-        _interactionTracker?.MaxPosition = (new Vector3D((float)scrollableWidth, (float)scrollableHeight, 0));
+        UpdateScrollableAreaForScale(_interactionTracker?.Scale ?? 1.0);
+
 
         return finalSize;
     }
@@ -609,14 +670,35 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         }
         else if (change.Property == PaddingProperty)
         {
-            _scrollAnimation = null;
+            _animationGroup = null;
             UpdateScrollAnimation();
         }
-        else
-            if (change.Property == ScrollFeaturesProperty ||
+        else if (change.Property == ScrollFeaturesProperty ||
                 change.Property == CanVerticallyScrollProperty ||
                 change.Property == CanHorizontallyScrollProperty)
                 UpdateInteractionOptions();
+        else if (change.Property == ZoomFactorProperty)
+        {
+            if (!_compositionUpdate && _interactionTracker != null)
+            {
+                var scale = change.GetNewValue<double>();
+                _interactionTracker.TryUpdateScale(scale);
+            }
+        }
+        else if (change.Property == MinZoomFactorProperty)
+        {
+            if (_interactionTracker != null)
+            {
+                _interactionTracker.MinScale = change.GetNewValue<double>();
+            }
+        }
+        else if (change.Property == MaxZoomFactorProperty)
+        {
+            if (_interactionTracker != null)
+            {
+                _interactionTracker.MaxScale = change.GetNewValue<double>();
+            }
+        }
 
         base.OnPropertyChanged(change);
     }
@@ -955,18 +1037,23 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         UpdateScrollAnimation();
 
         var position = new Vector(args.Position.X, args.Position.Y);
+        var scale = args.Scale;
 
-        void ApplyOffset()
+
+        void ApplyValues()
         {
             if (_interactionTracker != sender)
             {
                 return;
             }
 
+            UpdateScrollableAreaForScale(scale);
+
             try
             {
                 _compositionUpdate = true;
                 SetCurrentValue(OffsetProperty, position);
+                SetCurrentValue(ZoomFactorProperty, scale);
             }
             finally
             {
@@ -976,12 +1063,35 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
         if (Dispatcher.UIThread.CheckAccess())
         {
-            ApplyOffset();
+            ApplyValues();
         }
         else
         {
-            Dispatcher.UIThread.Post(ApplyOffset, DispatcherPriority.Render);
+            Dispatcher.UIThread.Post(ApplyValues, DispatcherPriority.Render);
         }
+    }
+
+    private void UpdateScrollableAreaForScale(double scale)
+    {
+        if (_interactionTracker == null || Child == null)
+            return;
+
+        var childMargin = Child.Margin + Padding;
+        if (Child.UseLayoutRounding)
+        {
+            var layoutScale = LayoutHelper.GetLayoutScale(Child);
+            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, layoutScale, layoutScale);
+        }
+        var baseExtent = Child.Bounds.Size.Inflate(childMargin);
+
+        var scaledExtent = new Size(baseExtent.Width * scale, baseExtent.Height * scale);
+
+        Extent = scaledExtent;
+
+        var scrollableWidth = Math.Max(0, scaledExtent.Width - Viewport.Width);
+        var scrollableHeight = Math.Max(0, scaledExtent.Height - Viewport.Height);
+
+        _interactionTracker.MaxPosition = new Vector3D((float)scrollableWidth, (float)scrollableHeight, 0);
     }
 
     public void CustomAnimationStateEntered(InteractionTracker sender, InteractionTrackerCustomAnimationStateEnteredArgs args)
@@ -1011,16 +1121,27 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         if (_interactionTracker == null)
             return;
 
-        if (_scrollAnimation == null)
+        if (_animationGroup == null)
         {
             var compositionVisual = ElementComposition.GetElementVisual(this);
 
-            _scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
-            _scrollAnimation.Expression = "Vector3(Margin.X, Margin.Y, 0) - Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z)";
-            _scrollAnimation.Target = "Offset";
-            _scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
+
+            var scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
+            scrollAnimation.Expression = "Vector3(Margin.X, Margin.Y, 0) - Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z)";
+            scrollAnimation.Target = "Offset";
+            scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
             var margin = Child!.Margin + Padding;
-            _scrollAnimation.SetVector2Parameter("Margin", new System.Numerics.Vector2((float)margin.Left, (float)margin.Top));
+            scrollAnimation.SetVector2Parameter("Margin", new System.Numerics.Vector2((float)margin.Left, (float)margin.Top));
+
+            var scaleAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
+            scaleAnimation.Expression = "Vector3(Tracker.Scale, Tracker.Scale, Tracker.Scale)";
+            scaleAnimation.SetReferenceParameter("Tracker", _interactionTracker);
+            scaleAnimation.Target = "Scale";
+            
+
+            _animationGroup = compositionVisual!.Compositor.CreateAnimationGroup();
+            _animationGroup.Add(scrollAnimation);
+            _animationGroup.Add(scaleAnimation);
         }
     }
 
@@ -1034,21 +1155,20 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             return;
 
         EnsureScrollAnimation();
-        if (_scrollAnimation == null)
+        if (_animationGroup == null)
             return;
 
-        vis.StartAnimation("Offset", _scrollAnimation);
+        vis.StartAnimationGroup(_animationGroup);
     }
 
     private void UpdateInteractionOptions()
     {
-        if (_interactionTracker == null)
+        if (_interactionTracker == null || _interactionSource == null)
             return;
 
-        var source = _interactionSource;
-        if (source == null)
-            return;
-
+        _interactionSource.ScaleSourceMode = IsZoomEnabled
+            ? InteractionSourceMode.EnabledWithInertia
+            : InteractionSourceMode.Disabled;
         //source.CanVerticallyScroll = CanVerticallyScroll;
         //source.CanHorizontallyScroll = CanHorizontallyScroll;
         //source.IsScrollInertiaEnabled = ScrollViewer.GetIsScrollInertiaEnabled(this);

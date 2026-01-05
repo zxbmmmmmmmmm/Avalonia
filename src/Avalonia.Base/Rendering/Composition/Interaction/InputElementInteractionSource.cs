@@ -30,9 +30,15 @@ public class InputElementInteractionSource : IDisposable
 
     private readonly InteractionTracker _tracker; // TODO: Support multiple trackers
     private readonly InputElement _inputElement;
-    private IPointer? _pointer;
+    private IPointer? _firstContact;
+    private Point _firstPosition;
+    private IPointer? _secondContact;
+    private Point _secondPosition;
+    private double _previousDistance;
+    private double _initialScale = 1;
+    private Point _previousCenter;
+
     private Point _pressedPosition;
-    private Point _lastPosition;
     private VelocityTracker? _velocityTracker;
 
     public InputElementInteractionSource(InputElement inputElement, InteractionTracker tracker)
@@ -64,53 +70,94 @@ public class InputElementInteractionSource : IDisposable
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (_pointer != null)
+        if (_firstContact is not null)
         {
+            if (ScaleSourceMode is InteractionSourceMode.Disabled)
+                return;
+
+            _secondContact = e.Pointer;
+            _secondPosition = e.GetPosition(_inputElement);
+            _previousDistance = GetDistance(_firstPosition, _secondPosition);
+            _previousCenter = GetCenter(_firstPosition, _secondPosition);
+            _initialScale = _tracker.Scale;
+
+            e.Pointer.Capture(_inputElement);
+            e.PreventGestureRecognition();
             return;
         }
 
-        _pointer = e.Pointer;
+        _firstContact = e.Pointer;
         e.PreventGestureRecognition();
         _pressedPosition = e.GetPosition(_inputElement);
-        _lastPosition = _pressedPosition;
+        _firstPosition = _pressedPosition;
         _velocityTracker = new VelocityTracker();
         _velocityTracker.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), default);
-        _pointer.Capture(_inputElement);
+        _firstContact.Capture(_inputElement);
         _tracker.StartUserManipulation(_pressedPosition, e.Pointer);
         e.Handled = true;
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (_pointer != e.Pointer)
-        {
-            return;
-        }
-
         var position = e.GetPosition(_inputElement);
-        var delta = position - _lastPosition;
-        if (PositionXSourceMode is InteractionSourceMode.Disabled)
-        {
-            delta = delta.WithX(0);
-        }
-        if (PositionYSourceMode is InteractionSourceMode.Disabled)
-        {
-            delta = delta.WithY(0);
-        }
-        if (delta != default)
-        {
 
-            _tracker.ReceiveManipulationDelta(delta);
-            _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), position - _pressedPosition);
-            _lastPosition = position;
-        }
-        e.Handled = true;
+        if (_secondContact is not null)
+        {
+            if (e.Pointer == _firstContact)
+            {
+                _firstPosition = position;
+            }
+            else if (e.Pointer == _secondContact)
+            {
+                _secondPosition = position;
+            }
 
+            var currentDistance = GetDistance(_firstPosition, _secondPosition);
+            var currentCenter = GetCenter(_firstPosition, _secondPosition);
+
+            if (_previousDistance > 0)
+            {
+                var scaleRatio = currentDistance / _previousDistance;
+                var newScale = _tracker.Scale * scaleRatio;
+                _tracker.ReceiveScale(currentCenter, newScale);
+            }
+
+            _previousDistance = currentDistance;
+            e.PreventGestureRecognition();
+            e.Handled = true;
+        }
+        else if (_firstContact is not null && e.Pointer == _firstContact)
+        {
+            var delta = position - _firstPosition;
+            if (PositionXSourceMode is InteractionSourceMode.Disabled)
+            {
+                delta = delta.WithX(0);
+            }
+            if (PositionYSourceMode is InteractionSourceMode.Disabled)
+            {
+                delta = delta.WithY(0);
+            }
+            if (delta != default)
+            {
+                _tracker.ReceiveManipulationDelta(delta);
+                _velocityTracker?.AddPosition(TimeSpan.FromMilliseconds(e.Timestamp), position - _pressedPosition);
+                _firstPosition = position;
+            }
+            e.Handled = true;
+        }
     }
 
     private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        if (_pointer != e.Pointer)
+        if (e.Pointer == _secondContact)
+        {
+            _secondContact = null;
+            _previousDistance = 0;
+            e.Handled = true;
+            return;
+        }
+
+        if (_firstContact != e.Pointer)
         {
             return;
         }
@@ -124,6 +171,19 @@ public class InputElementInteractionSource : IDisposable
         {
             velocity = velocity.WithY(0);
         }
+
+        if (_secondContact is not null)
+        {
+            _firstContact = _secondContact;
+            _firstPosition = _secondPosition;
+            _secondContact = null;
+            _previousDistance = 0;
+            _pressedPosition = _firstPosition;
+            _velocityTracker = new VelocityTracker();
+            e.Handled = true;
+            return;
+        }
+
         if (velocity != Vector.Zero)
         {
             _tracker.ReceiveInertiaStarting(new Point(velocity.X, velocity.Y));
@@ -133,23 +193,42 @@ public class InputElementInteractionSource : IDisposable
             _tracker.CompleteUserManipulation();
         }
 
-        _pointer.Capture(null);
-        Reset();
+        _firstContact.Capture(null);
+        ResetContacts();
         e.Handled = true;
+    }
 
+    private void ResetContacts()
+    {
+        _firstContact = null;
+        _secondContact = null;
+        _velocityTracker = null;
+        _pressedPosition = default;
+        _firstPosition = default;
+        _secondPosition = default;
+        _previousDistance = 0;
+        _previousCenter = default;
     }
 
     private void OnPointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
-
+        if (e.Pointer == _firstContact || e.Pointer == _secondContact)
+        {
+            _tracker.CompleteUserManipulation();
+            ResetContacts();
+        }
     }
 
-    private void Reset()
+    private static double GetDistance(Point a, Point b)
     {
-        _pointer = null;
-        _velocityTracker = null;
-        _pressedPosition = default;
-        _lastPosition = default;
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static Point GetCenter(Point a, Point b)
+    {
+        return new Point((a.X + b.X) / 2.0, (a.Y + b.Y) / 2.0);
     }
 
     public void Dispose()

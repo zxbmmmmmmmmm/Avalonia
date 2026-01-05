@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -85,6 +86,11 @@ public partial class InteractionTracker : CompositionObject
         _state.ReceiveInertiaStarting(-linearVelocity);
     }
 
+    internal void ReceiveScale(Point origin, double scale)
+    {
+        _state.ReceiveScale(origin, scale);
+    }
+
     internal void ReceivePointerWheel(int mouseWheelTicks, bool isHorizontal)
     {
         // On WinUI, this depends on mouse setting "how many lines to scroll each time"
@@ -110,4 +116,9 @@ public partial class InteractionTracker : CompositionObject
 
     public int TryUpdatePositionBy(Vector3D amount, InteractionTrackerClampingOption option)
         => TryUpdatePosition(Server.Position + amount, option);
+
+    internal void TryUpdateScale(double scale)
+    {
+        SetScale(scale,0);
+    }
 }
