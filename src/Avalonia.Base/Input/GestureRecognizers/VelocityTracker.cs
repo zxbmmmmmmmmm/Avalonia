@@ -142,6 +142,15 @@ namespace Avalonia.Input.GestureRecognizers
             var offset = newestSample.Point - oldestSample.Point;
             var duration = newestSample.Time - oldestSample.Time;
 
+            if (duration.TotalMilliseconds <= 0)
+            {
+                return new VelocityEstimate(
+                    PixelsPerSecond: Vector.Zero,
+                    Confidence: 1,
+                    Duration: duration,
+                    Offset: offset);
+            }
+
             if (sampleCount >= MinSampleSize)
             {
                 var xFit = LeastSquaresSolver.Solve(2, time.Slice(0, sampleCount), x.Slice(0, sampleCount), w.Slice(0, sampleCount));
