@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Xml.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Interactivity;
@@ -119,7 +120,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     /// Defines the <see cref="IsZoomEnabled"/> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsZoomEnabledProperty =
-        AvaloniaProperty.Register<CompositionScrollContentPresenter, bool>(nameof(IsZoomEnabled), true);
+        AvaloniaProperty.Register<CompositionScrollContentPresenter, bool>(nameof(IsZoomEnabled), false);
 
 
     //private ScrollFeaturesEnum _scrollFeatures = ScrollFeaturesEnum.None;
@@ -596,33 +597,6 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         return finalSize;
     }
 
-    private Size ComputeExtent(Size viewportSize)
-    {
-        var childMargin = Child!.Margin + Padding;
-
-        if (Child.UseLayoutRounding)
-        {
-            var scale = LayoutHelper.GetLayoutScale(Child);
-            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, scale, scale);
-        }
-
-        var extent = Child!.Bounds.Size.Inflate(childMargin);
-
-        if (MathUtilities.AreClose(extent.Width, viewportSize.Width, LayoutHelper.LayoutEpsilon))
-        {
-            extent = extent.WithWidth(viewportSize.Width);
-            _interactionSource!.PositionXSourceMode = InteractionSourceMode.Disabled;
-        }
-
-        if (MathUtilities.AreClose(extent.Height, viewportSize.Height, LayoutHelper.LayoutEpsilon))
-        {
-            extent = extent.WithHeight(viewportSize.Height);
-            _interactionSource!.PositionYSourceMode = InteractionSourceMode.Disabled;
-        }
-
-        return extent;
-    }
-
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == OffsetProperty)
@@ -1092,8 +1066,20 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
         Extent = scaledExtent;
 
+
+
         var scrollableWidth = Math.Max(0, scaledExtent.Width - Viewport.Width);
         var scrollableHeight = Math.Max(0, scaledExtent.Height - Viewport.Height);
+
+        if (MathUtilities.IsZero(scrollableWidth))
+        {
+            _interactionSource!.PositionXSourceMode = InteractionSourceMode.Disabled;
+        }
+
+        if (MathUtilities.IsZero(scrollableHeight))
+        {
+            _interactionSource!.PositionYSourceMode = InteractionSourceMode.Disabled;
+        }
 
         _interactionTracker.MaxPosition = new Vector3D((float)scrollableWidth, (float)scrollableHeight, 0);
     }
