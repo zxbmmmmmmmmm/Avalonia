@@ -127,6 +127,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     private InputElementInteractionSource? _interactionSource;
     private CompositionAnimationGroup? _animationGroup;
     private bool _compositionUpdate;
+    private bool _scaleChanged;
     private long? requestId;
     private bool _arranging;
     private Size _extent;
@@ -626,7 +627,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     {
         if (change.Property == OffsetProperty)
         {
-            if (!_arranging)
+            if (!_arranging && !_scaleChanged)
             {
                 InvalidateArrange();
             }
@@ -1034,7 +1035,6 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
     public void ValuesChanged(InteractionTracker sender, InteractionTrackerValuesChangedArgs args)
     {
-        UpdateScrollAnimation();
 
         var position = new Vector(args.Position.X, args.Position.Y);
         var scale = args.Scale;
@@ -1046,18 +1046,22 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             {
                 return;
             }
-
             UpdateScrollableAreaForScale(scale);
 
             try
             {
                 _compositionUpdate = true;
+                if(scale != ZoomFactor)
+                {
+                    _scaleChanged = true;
+                }
                 SetCurrentValue(OffsetProperty, position);
                 SetCurrentValue(ZoomFactorProperty, scale);
             }
             finally
             {
                 _compositionUpdate = false;
+                _scaleChanged = false;
             }
         }
 
@@ -1101,6 +1105,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     public void IdleStateEntered(InteractionTracker sender, InteractionTrackerIdleStateEnteredArgs args)
     {
         _inertiaArgs = null;
+        Dispatcher.UIThread.Post(InvalidateArrange);
     }
 
     public void InertiaStateEntered(InteractionTracker sender, InteractionTrackerInertiaStateEnteredArgs args)
