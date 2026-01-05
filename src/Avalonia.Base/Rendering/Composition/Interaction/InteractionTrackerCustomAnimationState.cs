@@ -27,6 +27,10 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
     {
     }
 
+    internal override void ReceiveScale(Point origin, double scale)
+    {
+    }
+
     internal override void ReceiveManipulationDelta(Point translationDelta)
     {
     }

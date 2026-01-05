@@ -8,8 +8,11 @@ namespace Avalonia.Rendering.Composition;
 
 internal sealed class InteractionTrackerInteractingState : InteractionTrackerState
 {
+    private double _previousScale;
+
     public InteractionTrackerInteractingState(InteractionTracker interactionTracker) : base(interactionTracker)
     {
+        _previousScale = interactionTracker.Scale;
         EnterState(interactionTracker.Owner);
     }
 
@@ -31,6 +34,29 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
     internal override void CompleteUserManipulation()
     {
         _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, default, requestId: 0, false));
+    }
+
+    internal override void ReceiveScale(Point origin, double scale)
+    {
+        var clampedScale = Math.Clamp(scale, _interactionTracker.MinScale, _interactionTracker.MaxScale);
+
+        if (Math.Abs(clampedScale - _previousScale) > double.Epsilon)
+        {
+            var scaleRatio = clampedScale / _previousScale;
+
+            var currentPosition = _interactionTracker.Position;
+            var deltaX = (origin.X - (-currentPosition.X)) * (1 - scaleRatio);
+            var deltaY = (origin.Y - (-currentPosition.Y)) * (1 - scaleRatio);
+
+            var newPosition = new Vector3D(
+                currentPosition.X - (float)deltaX,
+                currentPosition.Y - (float)deltaY,
+                currentPosition.Z);
+
+            _interactionTracker.SetPosition(newPosition, 0);
+            _interactionTracker.SetScale(clampedScale, 0);
+            _previousScale = clampedScale;
+        }
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)

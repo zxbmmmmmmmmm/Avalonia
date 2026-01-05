@@ -17,6 +17,7 @@ internal abstract class InteractionTrackerState
     protected abstract void EnterState(IInteractionTrackerOwner? owner);
     internal abstract void StartUserManipulation(Point position, IPointer pointer);
     internal abstract void CompleteUserManipulation();
+    internal abstract void ReceiveScale(Point origin, double scale);
     internal abstract void ReceiveManipulationDelta(Point translationDelta);
     internal abstract void ReceiveInertiaStarting(Point linearVelocity);
     internal abstract void ReceivePointerWheel(int delta, bool isHorizontal);
