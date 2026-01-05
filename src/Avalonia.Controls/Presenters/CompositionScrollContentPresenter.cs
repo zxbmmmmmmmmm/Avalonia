@@ -1072,15 +1072,13 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         var scrollableWidth = Math.Max(0, scaledExtent.Width - Viewport.Width);
         var scrollableHeight = Math.Max(0, scaledExtent.Height - Viewport.Height);
 
-        if (MathUtilities.IsZero(scrollableWidth))
-        {
-            _interactionSource!.PositionXSourceMode = InteractionSourceMode.Disabled;
-        }
+        _interactionSource!.PositionXSourceMode = MathUtilities.IsZero(scrollableWidth) && !CanHorizontallyScroll
+            ? InteractionSourceMode.Disabled
+            : InteractionSourceMode.EnabledWithInertia;
 
-        if (MathUtilities.IsZero(scrollableHeight))
-        {
-            _interactionSource!.PositionYSourceMode = InteractionSourceMode.Disabled;
-        }
+        _interactionSource!.PositionYSourceMode = MathUtilities.IsZero(scrollableHeight) && !CanVerticallyScroll
+            ? InteractionSourceMode.Disabled
+            : InteractionSourceMode.EnabledWithInertia;
 
         _interactionTracker.MaxPosition = new Vector3D((float)scrollableWidth, (float)scrollableHeight, 0);
     }
