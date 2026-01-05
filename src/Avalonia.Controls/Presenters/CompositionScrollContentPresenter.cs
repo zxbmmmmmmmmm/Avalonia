@@ -650,7 +650,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         }
         else if (change.Property == ScrollFeaturesProperty ||
                 change.Property == CanVerticallyScrollProperty ||
-                change.Property == CanHorizontallyScrollProperty)
+                change.Property == CanHorizontallyScrollProperty ||
+                change.Property == IsZoomEnabledProperty)
                 UpdateInteractionOptions();
         else if (change.Property == ZoomFactorProperty)
         {
