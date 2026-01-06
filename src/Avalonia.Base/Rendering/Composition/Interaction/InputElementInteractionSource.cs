@@ -67,10 +67,16 @@ public class InputElementInteractionSource : IDisposable
         {
             if (PositionYSourceMode is InteractionSourceMode.Disabled)
             {
+                if(PositionXSourceMode is not InteractionSourceMode.Disabled)
+                {
+                    _tracker.ReceivePointerWheel((int)e.Delta.Y, true);
+                    e.Handled = true;
+                }
                 return;
             }
 
             _tracker.ReceivePointerWheel((int)e.Delta.Y, false);
+            e.Handled = true;
         }
         else
         {
@@ -80,6 +86,7 @@ public class InputElementInteractionSource : IDisposable
             }
 
             _tracker.ReceivePointerWheel((int)e.Delta.X, true);
+            e.Handled = true;
         }
     }
 
