@@ -64,11 +64,10 @@ public class InputElementInteractionSource : IDisposable
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         if (ScaleSourceMode is not InteractionSourceMode.Disabled &&
-            e.KeyModifiers.HasFlag(KeyModifiers.Control) &&
             e.Delta.Y != 0)
         {
             var origin = e.GetPosition(_inputElement);
-            var scaleDelta = Math.Pow(1.1, e.Delta.Y);
+            var scaleDelta = Math.Pow(1.2, e.Delta.Y);
             _tracker.ReceiveScaleDelta(origin, scaleDelta);
             e.Handled = true;
             return;
