@@ -33,12 +33,18 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
 
     internal override void CompleteUserManipulation()
     {
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, default, requestId: 0, false));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, default, default, 0, requestId: 0, false));
     }
 
-    internal override void ReceiveScale(Point origin, double scale)
+    internal override void ReceiveScaleDelta(Point origin, double scaleDelta)
     {
-        var clampedScale = Math.Clamp(scale, _interactionTracker.MinScale, _interactionTracker.MaxScale);
+        if (scaleDelta <= 0 || double.IsNaN(scaleDelta) || double.IsInfinity(scaleDelta))
+        {
+            return;
+        }
+
+        var targetScale = _previousScale * scaleDelta;
+        var clampedScale = Math.Clamp(targetScale, _interactionTracker.MinScale, _interactionTracker.MaxScale);
 
         if (Math.Abs(clampedScale - _previousScale) > double.Epsilon)
         {
@@ -66,7 +72,13 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
 
     internal override void ReceiveInertiaStarting(Point linearVelocity)
     {
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, new Vector3D((float)linearVelocity.X, (float)linearVelocity.Y, 0), requestId: 0, isFromPointerWheel: false));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(
+            _interactionTracker, 
+            new Vector3D((float)linearVelocity.X, (float)linearVelocity.Y, 0),
+            default,
+            0,
+            requestId: 0, 
+            isFromPointerWheel: false));
     }
 
     internal override void ReceivePointerWheel(int delta, bool isHorizontal)

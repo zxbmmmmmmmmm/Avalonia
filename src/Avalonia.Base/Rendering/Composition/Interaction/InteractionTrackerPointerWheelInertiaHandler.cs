@@ -52,7 +52,7 @@ internal class InteractionTrackerPointerWheelInertiaHandler : ServerObject, ISer
 
     public Vector3D FinalModifiedPosition => Vector3D.Clamp(_calculatedFinalPosition, _minPosition, _maxPosition);
 
-    public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
+    public double FinalModifiedScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
     public void Start()
     {

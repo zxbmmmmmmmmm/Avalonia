@@ -1,11 +1,12 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Avalonia.Input;
 
 namespace Avalonia.Rendering.Composition;
 
 internal sealed class InteractionTrackerIdleState : InteractionTrackerState
 {
-	private readonly bool _isInitialIdleState;
+    private readonly bool _isInitialIdleState;
     private readonly int _requestId;
 
     public InteractionTrackerIdleState(InteractionTracker interactionTracker, int requestId, bool isInitialIdleState = false) : base(interactionTracker)
@@ -32,8 +33,22 @@ internal sealed class InteractionTrackerIdleState : InteractionTrackerState
     {
     }
 
-    internal override void ReceiveScale(Point origin, double scale)
+    internal override void ReceiveScaleDelta(Point origin, double delta)
     {
+        if (delta <= 0 || double.IsNaN(delta) || double.IsInfinity(delta))
+        {
+            return;
+        }
+
+        var scaleVelocity = Math.Log(delta) / 0.25;
+
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(
+            _interactionTracker,
+            default,
+            requestId: 0,
+            isFromPointerWheel: true,
+            scaleVelocity: scaleVelocity,
+            scaleOrigin: origin));
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)
@@ -49,14 +64,14 @@ internal sealed class InteractionTrackerIdleState : InteractionTrackerState
         // Constant velocity for 250ms
         var velocityValue = delta / 0.25f;
         var velocity = isHorizontal ? new Vector3D(velocityValue, 0, 0) : new Vector3D(0, velocityValue, 0);
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocity, requestId: 0, isFromPointerWheel: true));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocity, default, 0, requestId: 0, isFromPointerWheel: true));
     }
 
     internal override void TryUpdatePositionWithAdditionalVelocity(Vector3D velocityInPixelsPerSecond, int requestId)
     {
         // State changes to inertia and inertia modifiers are evaluated with requested velocity as initial velocity
         // TODO: inertia modifiers not yet implemented.
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocityInPixelsPerSecond, requestId, isFromPointerWheel: false));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocityInPixelsPerSecond, default, 0, requestId, isFromPointerWheel: false));
     }
 
     internal override void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId)

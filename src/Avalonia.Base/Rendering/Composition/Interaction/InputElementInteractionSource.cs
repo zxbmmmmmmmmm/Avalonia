@@ -63,11 +63,22 @@ public class InputElementInteractionSource : IDisposable
 
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
+        if (ScaleSourceMode is not InteractionSourceMode.Disabled &&
+            e.KeyModifiers.HasFlag(KeyModifiers.Control) &&
+            e.Delta.Y != 0)
+        {
+            var origin = e.GetPosition(_inputElement);
+            var scaleDelta = Math.Pow(1.1, e.Delta.Y);
+            _tracker.ReceiveScaleDelta(origin, scaleDelta);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Delta.Y != 0)
         {
             if (PositionYSourceMode is InteractionSourceMode.Disabled)
             {
-                if(PositionXSourceMode is not InteractionSourceMode.Disabled)
+                if (PositionXSourceMode is not InteractionSourceMode.Disabled)
                 {
                     _tracker.ReceivePointerWheel((int)e.Delta.Y, true);
                     e.Handled = true;
@@ -162,8 +173,7 @@ public class InputElementInteractionSource : IDisposable
             if (_isInteracting && _previousDistance > 0)
             {
                 var scaleRatio = currentDistance / _previousDistance;
-                var newScale = _tracker.Scale * scaleRatio;
-                _tracker.ReceiveScale(currentCenter, newScale);
+                _tracker.ReceiveScaleDelta(currentCenter, scaleRatio);
                 e.Handled = true;
             }
 
