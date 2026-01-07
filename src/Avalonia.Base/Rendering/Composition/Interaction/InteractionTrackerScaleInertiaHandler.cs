@@ -47,7 +47,8 @@ internal class InteractionTrackerScaleInertiaHandler : ServerObject, IInteractio
         _initialScale = interactionTracker.Scale;
 
         ScaleVelocity = _initialScaleVelocity = scaleVelocity;
-        FinalModifiedScale = _initialScale * Math.Exp(scaleVelocity * _timeConstantSeconds);
+        var finalScale = _initialScale * Math.Exp(scaleVelocity * _timeConstantSeconds);
+        FinalModifiedScale = Math.Clamp(finalScale, interactionTracker.MinScale, interactionTracker.MaxScale);
 
     }
 
@@ -90,7 +91,13 @@ internal class InteractionTrackerScaleInertiaHandler : ServerObject, IInteractio
             currentPosition.Y - (float)deltaY,
             currentPosition.Z);
 
-        _interactionTracker.SetPositionAndScale(scaledNewPosition, scale, 0);
+        var modifiedScale = Math.Clamp(scale, _interactionTracker.MinScale, _interactionTracker.MaxScale);
+
+        if (!CompositionMathHelpers.IsCloseReal(modifiedScale, _interactionTracker.MinScale)
+            && !CompositionMathHelpers.IsCloseReal(modifiedScale, _interactionTracker.MaxScale))
+        {
+            _interactionTracker.SetPositionAndScale(scaledNewPosition, modifiedScale, 0);
+        }
 
         var hasStoppedByScaleVelocity = Math.Abs(ScaleVelocity) <= Epsilon;
         var hasReachedScaleTarget = CompositionMathHelpers.IsCloseReal(scale, FinalModifiedScale, 0.001);
@@ -98,7 +105,8 @@ internal class InteractionTrackerScaleInertiaHandler : ServerObject, IInteractio
 
         if (hasStoppedByScaleVelocity || hasReachedScaleTarget || hasTimedOut)
         {
-            // clamp with inertia
+            // clamp position with inertia
+
             Dispatcher.UIThread.Post(() =>
             {
                 _interactionTracker.ChangeState(new InteractionTrackerInertiaState(
@@ -106,7 +114,6 @@ internal class InteractionTrackerScaleInertiaHandler : ServerObject, IInteractio
                     default, default, 0
                     , requestId: 0, false));
             }, priority: DispatcherPriority.Render);
-
             Stop();
         }
     }
