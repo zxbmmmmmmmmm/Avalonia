@@ -27,7 +27,7 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
     {
     }
 
-    internal override void ReceiveScale(Point origin, double scale)
+    internal override void ReceiveScaleDelta(Point origin, double scale)
     {
     }
 
@@ -49,7 +49,13 @@ internal sealed class InteractionTrackerCustomAnimationState : InteractionTracke
 
         // State changes to inertia with inertia modifiers evaluated using requested velocity as initial velocity.
         // TODO: inertia modifiers not yet implemented.
-        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(_interactionTracker, velocityInPixelsPerSecond, requestId, isFromPointerWheel: false));
+        _interactionTracker.ChangeState(new InteractionTrackerInertiaState(
+            _interactionTracker,
+            velocityInPixelsPerSecond,
+            default,
+            0,
+            requestId,
+            isFromPointerWheel: false));
     }
 
     internal override void TryUpdatePosition(Vector3D value, InteractionTrackerClampingOption option, int requestId)

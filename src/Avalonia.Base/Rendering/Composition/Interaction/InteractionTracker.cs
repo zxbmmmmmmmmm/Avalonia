@@ -46,23 +46,34 @@ public partial class InteractionTracker : CompositionObject
 
     internal void SetPosition(Vector3D newPosition, int requestId)
     {
-        if (Position != newPosition)
-        {
-            Server.Position = newPosition;
-            Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
-        }
+        if (Position == newPosition)
+            return;
+        Server.Position = newPosition;
+        Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, Scale, requestId));
     }
 
     internal void SetScale(double newScale, int requestId)
     {
+        if (CompositionMathHelpers.IsCloseReal(Scale, newScale))
+            return;
+
         Server.Scale = newScale;
         Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(Position, newScale, requestId));
+    }
+
+    internal void SetPositionAndScale(Vector3D newPosition, double newScale, int requestId)
+    {
+        if (CompositionMathHelpers.IsCloseReal(Scale, newScale) && Position == newPosition)
+            return;
+        Server.Position = newPosition;
+        Server.Scale = newScale;
+        Owner?.ValuesChanged(this, new InteractionTrackerValuesChangedArgs(newPosition, newScale, requestId));
     }
 
     internal void ChangeState(InteractionTrackerState newState)
     {
         Interlocked.Increment(ref _count);
-        Debug.WriteLine($"{_count}:{_state.GetType().Name.Replace("InteractionTracker","")} -> {newState.GetType().Name.Replace("InteractionTracker", "")}");
+        Debug.WriteLine($"{_count}:{_state.GetType().Name.Replace("InteractionTracker", "")} -> {newState.GetType().Name.Replace("InteractionTracker", "")}");
         _state = newState;
     }
 
@@ -86,9 +97,9 @@ public partial class InteractionTracker : CompositionObject
         _state.ReceiveInertiaStarting(-linearVelocity);
     }
 
-    internal void ReceiveScale(Point origin, double scale)
+    internal void ReceiveScaleDelta(Point origin, double delta)
     {
-        _state.ReceiveScale(origin, scale);
+        _state.ReceiveScaleDelta(origin, delta);
     }
 
     internal void ReceivePointerWheel(int mouseWheelTicks, bool isHorizontal)
@@ -119,6 +130,6 @@ public partial class InteractionTracker : CompositionObject
 
     internal void TryUpdateScale(double scale)
     {
-        SetScale(scale,0);
+        SetScale(scale, 0);
     }
 }

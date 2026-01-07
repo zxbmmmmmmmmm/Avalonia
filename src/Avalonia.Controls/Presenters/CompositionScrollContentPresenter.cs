@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Xml.Linq;
@@ -532,67 +533,73 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
     private Size ArrangeWithAnchoring(Size finalSize)
     {
-        var size = new Size(
-            CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Inflate(Padding).Width, finalSize.Width) : finalSize.Width,
-            CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Inflate(Padding).Height, finalSize.Height) : finalSize.Height);
-
-        var isAnchoring = Offset.X >= EdgeDetectionTolerance || Offset.Y >= EdgeDetectionTolerance;
-
-        if (isAnchoring)
+        _arranging = true;
+        try
         {
-            // Calculate the new anchor element if necessary.
-            EnsureAnchorElementSelection();
+            var size = new Size(
+    CanHorizontallyScroll ? Math.Max(Child!.DesiredSize.Inflate(Padding).Width, finalSize.Width) : finalSize.Width,
+    CanVerticallyScroll ? Math.Max(Child!.DesiredSize.Inflate(Padding).Height, finalSize.Height) : finalSize.Height);
 
-            // Do the arrange.
-            ArrangeOverrideImpl(size, -Offset);
+            var isAnchoring = Offset.X >= EdgeDetectionTolerance || Offset.Y >= EdgeDetectionTolerance;
 
-            // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
-            var anchorShift = TrackAnchor();
-
-            if (anchorShift != default)
+            if (isAnchoring)
             {
-                var newOffset = Offset + anchorShift;
-                var newExtent = Extent;
-                var maxOffset = new Vector(Extent.Width - Viewport.Width, Extent.Height - Viewport.Height);
+                // Calculate the new anchor element if necessary.
+                EnsureAnchorElementSelection();
 
-                if (newOffset.X > maxOffset.X)
+                // Do the arrange.
+                ArrangeOverrideImpl(size, -Offset);
+
+                // If the anchor moved during the arrange, we need to adjust the offset and do another arrange.
+                var anchorShift = TrackAnchor();
+
+                if (anchorShift != default)
                 {
-                    newExtent = newExtent.WithWidth(newOffset.X + Viewport.Width);
+                    var newOffset = Offset + anchorShift;
+                    var newExtent = Extent;
+                    var maxOffset = new Vector(Extent.Width - Viewport.Width, Extent.Height - Viewport.Height);
+
+                    if (newOffset.X > maxOffset.X)
+                    {
+                        newExtent = newExtent.WithWidth(newOffset.X + Viewport.Width);
+                    }
+
+                    if (newOffset.Y > maxOffset.Y)
+                    {
+                        newExtent = newExtent.WithHeight(newOffset.Y + Viewport.Height);
+                    }
+
+                    Extent = newExtent;
+
+                    try
+                    {
+                        _compositionUpdate = true;
+                        _interactionTracker?.TryUpdatePositionBy(new Vector3D(anchorShift.X, anchorShift.Y, 0));
+                        SetCurrentValue(OffsetProperty, newOffset);
+                    }
+                    finally
+                    {
+                        _compositionUpdate = false;
+                    }
                 }
 
-                if (newOffset.Y > maxOffset.Y)
-                {
-                    newExtent = newExtent.WithHeight(newOffset.Y + Viewport.Height);
-                }
-
-                Extent = newExtent;
-
-                try
-                {
-                    _arranging = true;
-                    _compositionUpdate = true;
-                    _interactionTracker?.TryUpdatePositionBy(new Vector3D(anchorShift.X, anchorShift.Y, 0));
-                    SetCurrentValue(OffsetProperty, newOffset);
-                }
-                finally
-                {
-                    _arranging = false;
-                    _compositionUpdate = false;
-                }
+                ArrangeOverrideImpl(size, -Offset);
+            }
+            else
+            {
+                ArrangeOverrideImpl(size, -Offset);
             }
 
-            ArrangeOverrideImpl(size, -Offset);
+            Viewport = finalSize;
+            _isAnchorElementDirty = true;
+
+            UpdateScrollableAreaForScale(_interactionTracker?.Scale ?? 1.0);
         }
-        else
+        finally
         {
-            ArrangeOverrideImpl(size, -Offset);
+            _arranging = false;
+
         }
-
-        Viewport = finalSize;
-        _isAnchorElementDirty = true;
-
-        UpdateScrollableAreaForScale(_interactionTracker?.Scale ?? 1.0);
-
 
         return finalSize;
     }
@@ -606,7 +613,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
                 InvalidateArrange();
             }
 
-            if (!_compositionUpdate)
+            if (!_scaleChanged && !_compositionUpdate)
             {
                 var offset = change.GetNewValue<Vector>();
                 requestId = _interactionTracker!.TryUpdatePosition(new Vector3D(offset.X, offset.Y, 0));
@@ -633,7 +640,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             {
                 _owner.Extent = change.GetNewValue<Size>();
             }
-            CoerceValue(OffsetProperty);
+            if(!_scaleChanged)
+                CoerceValue(OffsetProperty);
         }
         else if (change.Property == ViewportProperty)
         {
@@ -652,7 +660,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
                 change.Property == CanVerticallyScrollProperty ||
                 change.Property == CanHorizontallyScrollProperty ||
                 change.Property == IsZoomEnabledProperty)
-                UpdateInteractionOptions();
+            UpdateInteractionOptions();
         else if (change.Property == ZoomFactorProperty)
         {
             if (!_compositionUpdate && _interactionTracker != null)
@@ -1021,15 +1029,14 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             {
                 return;
             }
-            UpdateScrollableAreaForScale(scale);
 
             try
             {
                 _compositionUpdate = true;
-                if(scale != ZoomFactor)
-                {
-                    _scaleChanged = true;
-                }
+                _scaleChanged = !CompositionMathHelpers.IsCloseReal(scale, ZoomFactor);
+
+                UpdateScrollableAreaForScale(scale);
+
                 SetCurrentValue(OffsetProperty, position);
                 SetCurrentValue(ZoomFactorProperty, scale);
             }
@@ -1127,7 +1134,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             scaleAnimation.Expression = "Vector3(Tracker.Scale, Tracker.Scale, Tracker.Scale)";
             scaleAnimation.SetReferenceParameter("Tracker", _interactionTracker);
             scaleAnimation.Target = "Scale";
-            
+
 
             _animationGroup = compositionVisual!.Compositor.CreateAnimationGroup();
             _animationGroup.Add(scrollAnimation);

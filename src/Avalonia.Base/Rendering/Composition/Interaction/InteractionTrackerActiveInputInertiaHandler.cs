@@ -24,7 +24,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
     public Vector3D InitialVelocity => new Vector3D(_xHelper.InitialVelocity, _yHelper.InitialVelocity, _zHelper.InitialVelocity);
     public Vector3D FinalPosition => new Vector3D(_xHelper.FinalValue, _yHelper.FinalValue, _zHelper.FinalValue);
     public Vector3D FinalModifiedPosition => new Vector3D(_xHelper.FinalModifiedValue, _yHelper.FinalModifiedValue, _zHelper.FinalModifiedValue);
-    public double FinalScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
+    public double FinalModifiedScale => _interactionTracker.Scale; // TODO: Scale not yet implemented
 
     public InteractionTrackerActiveInputInertiaHandler(ServerCompositor serverCompositor, InteractionTracker interactionTracker, Vector3D translationVelocities, int requestId)
         : base(serverCompositor)
