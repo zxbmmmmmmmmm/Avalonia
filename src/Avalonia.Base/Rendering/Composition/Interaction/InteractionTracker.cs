@@ -23,9 +23,17 @@ public partial class InteractionTracker : CompositionObject
 
     public double MaxScale { get; set; } = 1.0;
 
-    public Vector3D MinPosition { get; set; }
 
-    public Vector3D MaxPosition { get; set; }
+    public Vector3D MinPosition
+    {
+        get => Server.MinPosition;
+        set => Server.MinPosition = value;
+    }
+    public Vector3D MaxPosition
+    { 
+        get => Server.MaxPosition;
+        set => Server.MaxPosition = value;
+    }
 
     public Vector3D? PositionInertiaDecayRate { get; set; }
 

@@ -1057,38 +1057,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         }
     }
 
-    private void UpdateScrollableAreaForScale(double scale)
-    {
-        if (_interactionTracker == null || Child == null)
-            return;
 
-        var childMargin = Child.Margin + Padding;
-        if (Child.UseLayoutRounding)
-        {
-            var layoutScale = LayoutHelper.GetLayoutScale(Child);
-            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, layoutScale, layoutScale);
-        }
-        var baseExtent = Child.Bounds.Size.Inflate(childMargin);
-
-        var scaledExtent = new Size(baseExtent.Width * scale, baseExtent.Height * scale);
-
-        Extent = scaledExtent;
-
-
-
-        var scrollableWidth = Math.Max(0, scaledExtent.Width - Viewport.Width);
-        var scrollableHeight = Math.Max(0, scaledExtent.Height - Viewport.Height);
-
-        _interactionSource!.PositionXSourceMode = MathUtilities.IsZero(scrollableWidth) && !CanHorizontallyScroll
-            ? InteractionSourceMode.Disabled
-            : InteractionSourceMode.EnabledWithInertia;
-
-        _interactionSource!.PositionYSourceMode = MathUtilities.IsZero(scrollableHeight) && !CanVerticallyScroll
-            ? InteractionSourceMode.Disabled
-            : InteractionSourceMode.EnabledWithInertia;
-
-        _interactionTracker.MaxPosition = new Vector3D((float)scrollableWidth, (float)scrollableHeight, 0);
-    }
 
     public void CustomAnimationStateEntered(InteractionTracker sender, InteractionTrackerCustomAnimationStateEnteredArgs args)
     {
@@ -1113,33 +1082,106 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         UpdateScrollAnimation();
     }
 
-    private void EnsureScrollAnimation()
+    private void UpdateScrollableAreaForScale(double scale)
     {
-        if (_interactionTracker == null)
-            return;
-
-        if (_animationGroup == null)
+        if (_interactionTracker == null || Child == null || _interactionSource == null)
         {
-            var compositionVisual = ElementComposition.GetElementVisual(this);
-
-
-            var scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
-            scrollAnimation.Expression = "Vector3(Margin.X, Margin.Y, 0) - Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z)";
-            scrollAnimation.Target = "Offset";// TODO: Use Transition property instead
-            scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
-            var margin = Child!.Margin + Padding;
-            scrollAnimation.SetVector2Parameter("Margin", new System.Numerics.Vector2((float)margin.Left, (float)margin.Top));
-
-            var scaleAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
-            scaleAnimation.Expression = "Vector3(Tracker.Scale, Tracker.Scale, Tracker.Scale)";
-            scaleAnimation.SetReferenceParameter("Tracker", _interactionTracker);
-            scaleAnimation.Target = "Scale";
-
-
-            _animationGroup = compositionVisual!.Compositor.CreateAnimationGroup();
-            _animationGroup.Add(scrollAnimation);
-            _animationGroup.Add(scaleAnimation);
+            return;
         }
+
+        var childMargin = Child.Margin + Padding;
+        if (Child.UseLayoutRounding)
+        {
+            var layoutScale = LayoutHelper.GetLayoutScale(Child);
+            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, layoutScale, layoutScale);
+        }
+
+        var baseExtent = Child.Bounds.Size.Inflate(childMargin);
+        var scaledExtent = new Size(baseExtent.Width * scale, baseExtent.Height * scale);
+
+        Extent = scaledExtent;
+
+        var minPosition = ComputeMinPositionForAlignment(baseExtent, scale);
+        var maxPosition = ComputeMaxPositionForAlignment(baseExtent, scale);
+
+        _interactionTracker.MinPosition = new Vector3D(minPosition.X, minPosition.Y, 0);
+        _interactionTracker.MaxPosition = new Vector3D(maxPosition.X, maxPosition.Y, 0);
+
+        var range = maxPosition - minPosition;
+
+        _interactionSource.PositionXSourceMode = MathUtilities.IsZero(range.X) && !CanHorizontallyScroll
+            ? InteractionSourceMode.Disabled
+            : InteractionSourceMode.EnabledWithInertia;
+
+        _interactionSource.PositionYSourceMode = MathUtilities.IsZero(range.Y) && !CanVerticallyScroll
+            ? InteractionSourceMode.Disabled
+            : InteractionSourceMode.EnabledWithInertia;
+    }
+
+
+
+
+
+    private Vector ComputeMinPositionForAlignment(Size unscaledExtent, double scale)
+    {
+        var scaledWidthMinusViewport = (unscaledExtent.Width * scale) - Viewport.Width;
+        var scaledHeightMinusViewport = (unscaledExtent.Height * scale) - Viewport.Height;
+
+        var minX = 0.0;
+        var minY = 0.0;
+
+        if (Child is { HorizontalAlignment: HorizontalAlignment.Center or HorizontalAlignment.Stretch })
+            minX = Math.Min(0.0, scaledWidthMinusViewport / 2.0);
+        else if (Child is { HorizontalAlignment: HorizontalAlignment.Right })
+            minX = Math.Min(0.0, scaledWidthMinusViewport);
+
+        if (Child is { VerticalAlignment: VerticalAlignment.Center or VerticalAlignment.Stretch })
+            minY = Math.Min(0.0, scaledHeightMinusViewport / 2.0);
+        else if (Child is { VerticalAlignment: VerticalAlignment.Bottom })
+            minY = Math.Min(0.0, scaledHeightMinusViewport);
+
+        return new Vector(minX, minY);
+    }
+
+    private Vector ComputeMaxPositionForAlignment(Size unscaledExtent, double scale)
+    {
+        var scaledWidthMinusViewport = (unscaledExtent.Width * scale) - Viewport.Width;
+        var scaledHeightMinusViewport = (unscaledExtent.Height * scale) - Viewport.Height;
+
+        var maxX =  scaledWidthMinusViewport;
+        var maxY = scaledHeightMinusViewport;
+
+        if (Child is { HorizontalAlignment: HorizontalAlignment.Center or HorizontalAlignment.Stretch })
+        {
+            if (maxX < 0.0)
+                maxX /= 2.0;
+            else
+                maxX = scaledWidthMinusViewport;
+        }
+        else if (Child is { HorizontalAlignment: HorizontalAlignment.Right })
+        {
+            if (scaledWidthMinusViewport < 0.0)
+                maxX = -scaledWidthMinusViewport;
+            else
+                maxX = scaledWidthMinusViewport;
+        }
+
+        if (Child is { VerticalAlignment: VerticalAlignment.Center or VerticalAlignment.Stretch })
+        {
+            if (maxY < 0.0)
+                maxY /= 2.0;
+            else
+                maxY = scaledHeightMinusViewport;
+        }
+        else if (Child is { VerticalAlignment: VerticalAlignment.Bottom })
+        {
+            if (scaledHeightMinusViewport < 0.0)
+                maxY = -scaledHeightMinusViewport;
+            else
+                maxY = scaledHeightMinusViewport;
+        }
+
+        return new Vector(maxX, maxY);
     }
 
     private void UpdateScrollAnimation()
@@ -1156,6 +1198,37 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             return;
 
         vis.StartAnimationGroup(_animationGroup);
+    }
+
+    private void EnsureScrollAnimation()
+    {
+        if (_interactionTracker == null)
+        {
+            return;
+        }
+
+        if (_animationGroup == null)
+        {
+            var compositionVisual = ElementComposition.GetElementVisual(this);
+
+            var scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
+            scrollAnimation.Expression =
+                "Vector3(Margin.X, Margin.Y, 0) - (Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z))";
+            scrollAnimation.Target = "Offset";
+            scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
+
+            var margin = Child!.Margin + Padding;
+            scrollAnimation.SetVector2Parameter("Margin", new Vector2((float)margin.Left, (float)margin.Top));
+
+            var scaleAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
+            scaleAnimation.Expression = "Vector3(Tracker.Scale, Tracker.Scale, Tracker.Scale)";
+            scaleAnimation.SetReferenceParameter("Tracker", _interactionTracker);
+            scaleAnimation.Target = "Scale";
+
+            _animationGroup = compositionVisual!.Compositor.CreateAnimationGroup();
+            _animationGroup.Add(scrollAnimation);
+            _animationGroup.Add(scaleAnimation);
+        }
     }
 
     private void UpdateInteractionOptions()
