@@ -1125,7 +1125,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
             var scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
             scrollAnimation.Expression = "Vector3(Margin.X, Margin.Y, 0) - Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z)";
-            scrollAnimation.Target = "Offset";
+            scrollAnimation.Target = "Offset";// TODO: Use Transition property instead
             scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
             var margin = Child!.Margin + Padding;
             scrollAnimation.SetVector2Parameter("Margin", new System.Numerics.Vector2((float)margin.Left, (float)margin.Top));
