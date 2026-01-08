@@ -135,7 +135,7 @@ public partial class Visual
 
         // TODO: Introduce a dirty mask like WPF has, so we don't overwrite properties every time
 
-        if (!comp.Server.HasAnimationForProperty("Offset"))
+        if (!comp.Server.HasAnimationForProperty("Offset"))// TODO: Remove this once we have Translation property
         {
             comp.Offset = new(Bounds.Left, Bounds.Top, 0);
         }
