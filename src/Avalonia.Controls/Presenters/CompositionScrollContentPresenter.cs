@@ -33,6 +33,7 @@ public enum ScrollFeaturesEnum
 public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrollable, IScrollAnchorProvider, IInteractionTrackerOwner
 {
     private const double EdgeDetectionTolerance = 0.1;
+    private const int ArrangeThrottleMs = 50;
 
     public static readonly AttachedProperty<ScrollFeaturesEnum> ScrollFeaturesProperty =
         AvaloniaProperty.RegisterAttached<CompositionScrollContentPresenter, Control, ScrollFeaturesEnum>("ScrollFeatures", defaultValue: ScrollFeaturesEnum.None);
@@ -151,7 +152,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
     private bool _isSnapPointsUpdated;
     private InteractionTrackerInertiaStateEnteredArgs? _inertiaArgs;
-
+    private Stopwatch _throttleStopWatch = new();
     /// <summary>
     /// Initializes static members of the <see cref="CompositionScrollContentPresenter"/> class.
     /// </summary>
@@ -167,6 +168,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
     public CompositionScrollContentPresenter()
     {
         AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
+        _throttleStopWatch.Start();
     }
 
     public static ScrollFeaturesEnum GetScrollFeatures(Control element)
@@ -604,13 +606,29 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         return finalSize;
     }
 
+    private void RequestArrangeThrottled()
+    {
+        if (_throttleStopWatch.ElapsedMilliseconds <= ArrangeThrottleMs) return;
+        InvalidateArrange();
+        _throttleStopWatch.Reset();
+        _throttleStopWatch.Start();
+    }
+
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == OffsetProperty)
         {
             if (!_arranging && !_scaleChanged)
             {
-                InvalidateArrange();
+                if (_compositionUpdate)
+                {
+                    RequestArrangeThrottled();
+                }
+                else
+                {
+                    InvalidateArrange();
+                }
             }
 
             if (!_scaleChanged && !_compositionUpdate)
