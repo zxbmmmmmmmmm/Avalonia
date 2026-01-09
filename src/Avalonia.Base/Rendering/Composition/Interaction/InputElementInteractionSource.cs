@@ -36,7 +36,6 @@ public class InputElementInteractionSource : IDisposable
     private IPointer? _secondContact;
     private Point _secondPosition;
     private double _previousDistance;
-    private double _initialScale = 1;
     private Point _previousCenter;
     private bool _isInteracting;
 
