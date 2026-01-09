@@ -40,10 +40,14 @@
                         HorizontalScrollBarVisibility="{Binding HorizontalScrollVisibility}"
                         IsScrollInertiaEnabled="{Binding EnableInertia}"
                         IsZoomEnabled="{Binding EnableZoom}"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
                         VerticalScrollBarVisibility="{Binding VerticalScrollVisibility}">
                         <Image
                             Width="800"
                             Height="800"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
                             Source="/Assets/delicate-arch-896885_640.jpg"
                             Stretch="UniformToFill" />
                     </ScrollViewer>

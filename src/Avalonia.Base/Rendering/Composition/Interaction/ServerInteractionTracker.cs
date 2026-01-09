@@ -17,6 +17,10 @@ internal partial class ServerInteractionTracker : ServerObject
             return s_IdOfPositionProperty;
         if (name == "Scale")
             return s_IdOfScaleProperty;
+        if (name == "MinPosition")
+            return s_IdOfMinPositionProperty;
+        if (name == "MaxPosition")
+            return s_IdOfMaxPositionProperty;
         return base.GetCompositionProperty(name);
     }
 }

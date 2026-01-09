@@ -59,6 +59,8 @@
     </Object>
     <Object Name="InteractionTracker" ServerOnly="true">
         <Property Name="Position" Type="Vector3D" Animated="true"/>
+        <Property Name="MinPosition" Type="Vector3D" Animated="true"/>
+        <Property Name="MaxPosition" Type="Vector3D" Animated="true"/>
         <Property Name="Scale" Type="double" DefaultValue="1" Animated="true"/>
     </Object>
     <KeyFrameAnimation Name="Scalar" Type="float"/>
