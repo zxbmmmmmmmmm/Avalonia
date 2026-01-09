@@ -9,6 +9,7 @@ namespace Avalonia.Rendering.Composition;
 internal sealed class InteractionTrackerInteractingState : InteractionTrackerState
 {
     private double _previousScale;
+    private Point _previousOrigin;
 
     public InteractionTrackerInteractingState(InteractionTracker interactionTracker) : base(interactionTracker)
     {
@@ -43,26 +44,49 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
             return;
         }
 
+        var currentPosition = _interactionTracker.Position;
+
+        // Treat origin movement as translation (e.g. two fingers moving together while pinching).
+        // PinchGestureRecognizer origin is the midpoint of fingers, so delta(origin) is a natural pan signal.
+        if (_previousOrigin != default)
+        {
+            var originDelta = origin - _previousOrigin;
+            if (originDelta != default)
+            {
+                currentPosition = new Vector3D(
+                    currentPosition.X - (float)originDelta.X,
+                    currentPosition.Y - (float)originDelta.Y,
+                    currentPosition.Z);
+            }
+        }
+
         var targetScale = _previousScale * scaleDelta;
         var clampedScale = Math.Clamp(targetScale, _interactionTracker.MinScale, _interactionTracker.MaxScale);
 
-        if (Math.Abs(clampedScale - _previousScale) > double.Epsilon)
+        var scaleChanged = Math.Abs(clampedScale - _previousScale) > double.Epsilon;
+        if (scaleChanged)
         {
             var scaleRatio = clampedScale / _previousScale;
 
-            var currentPosition = _interactionTracker.Position;
+            // Keep the content under origin stationary while scaling.
             var deltaX = (origin.X - (-currentPosition.X)) * (1 - scaleRatio);
             var deltaY = (origin.Y - (-currentPosition.Y)) * (1 - scaleRatio);
 
-            var newPosition = new Vector3D(
+            currentPosition = new Vector3D(
                 currentPosition.X - (float)deltaX,
                 currentPosition.Y - (float)deltaY,
                 currentPosition.Z);
+        }
 
-            _interactionTracker.SetPosition(newPosition, 0);
+        _interactionTracker.SetPosition(currentPosition, 0);
+
+        if (scaleChanged)
+        {
             _interactionTracker.SetScale(clampedScale, 0);
             _previousScale = clampedScale;
         }
+
+        _previousOrigin = origin;
     }
 
     internal override void ReceiveManipulationDelta(Point translationDelta)
