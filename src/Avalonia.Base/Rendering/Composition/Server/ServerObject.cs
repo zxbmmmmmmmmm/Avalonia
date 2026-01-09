@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Rendering.Composition.Animations;
@@ -64,7 +65,7 @@ namespace Avalonia.Rendering.Composition.Server
             field = value;
             _animations?.RemoveAnimationForProperty(property);
         }
-        
+
         public virtual void NotifyAnimatedValueChanged(CompositionProperty prop) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
@@ -74,6 +75,11 @@ namespace Avalonia.Rendering.Composition.Server
                 return CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default;
 
             return _animations.GetPropertyForAnimation(name);
+        }
+        public bool HasAnimationForProperty(string propertyName)
+        {
+            var prop = GetCompositionProperty(propertyName);
+            return prop != null && _animations?.HasAnimationForProperty(prop) == true;
         }
     }
 }

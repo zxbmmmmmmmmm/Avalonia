@@ -9,6 +9,7 @@ namespace ControlCatalog.Pages
     {
         private bool _allowAutoHide;
         private bool _enableInertia;
+        private bool _enableZoom;
         private ScrollBarVisibility _horizontalScrollVisibility;
         private ScrollBarVisibility _verticalScrollVisibility;
         private SnapPointsType _snapPointsType;
@@ -56,6 +57,13 @@ namespace ControlCatalog.Pages
             get => _enableInertia;
             set => this.RaiseAndSetIfChanged(ref _enableInertia, value);
         }
+
+        public bool EnableZoom
+        {
+            get => _enableZoom;
+            set => this.RaiseAndSetIfChanged(ref _enableZoom, value);
+        }
+
 
         public ScrollBarVisibility HorizontalScrollVisibility
         {

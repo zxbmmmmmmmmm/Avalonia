@@ -36,7 +36,8 @@ class ServerObjectAnimations
                     sub.Key.Invalidate();
         }
     }
-    
+
+
     abstract class ServerObjectAnimationInstance
     {
         public ServerObjectAnimations Owner { get; }
@@ -129,7 +130,10 @@ class ServerObjectAnimations
     public void SubscribeToInvalidation(CompositionProperty member, IAnimationInstance animation)
     {
         if (!_subscriptions.TryGetValue(member, out var store))
+        {
             _subscriptions[member] = store = new ServerObjectSubscriptionStore();
+            store.IsValid = true;
+        }
         if (store.Subscribers == null)
             store.Subscribers = new();
         store.Subscribers.AddRef(animation);
@@ -153,6 +157,10 @@ class ServerObjectAnimations
             return animation.GetVariant();
 
         return prop.GetVariant?.Invoke(_owner) ?? default;
+    }
+    public bool HasAnimationForProperty(CompositionProperty property)
+    {
+        return _animations.TryGetValue(property, out _);
     }
 
     public void EvaluateAnimations()
