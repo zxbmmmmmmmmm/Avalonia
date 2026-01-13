@@ -10,27 +10,27 @@ namespace Avalonia.Rendering.Composition.Animations
     /// <summary>
     /// Server-side counterpart of <see cref="ExpressionAnimation"/> with values baked-in.
     /// </summary>
-    internal class ExpressionAnimationInstance : AnimationInstanceBase<ExpressionVariant>
+    internal class ExpressionAnimationInstance<T> : AnimationInstanceBase<T> where T:struct
     {
         private readonly Expression _expression;
-        private ExpressionVariant _startingValue;
-        private readonly ExpressionVariant? _finalValue;
+        private T _startingValue;
+        private readonly T? _finalValue;
 
-        protected override ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue)
+        protected override T EvaluateCore(TimeSpan now, T currentValue)
         {
             var ctx = new ExpressionEvaluationContext
             {
                 Parameters = Parameters,
                 Target = TargetObject,
                 ForeignFunctionInterface = BuiltInExpressionFfi.Instance,
-                StartingValue = _startingValue,
-                FinalValue = _finalValue ?? _startingValue,
-                CurrentValue = currentValue
+                StartingValue = ExpressionVariant.Create(_startingValue),
+                FinalValue = ExpressionVariant.Create(_finalValue ?? _startingValue),
+                CurrentValue = ExpressionVariant.Create(currentValue)
             };
-            return _expression.Evaluate(ref ctx);
+            return _expression.Evaluate(ref ctx).CastOrDefault<T>();
         }
 
-        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property)
+        public override void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty property)
         {
             _startingValue = startingValue;
             var hs = new HashSet<(string, string)>();
@@ -40,7 +40,7 @@ namespace Avalonia.Rendering.Composition.Animations
         
         public ExpressionAnimationInstance(Expression expression,
             ServerObject target,
-            ExpressionVariant? finalValue,
+            T? finalValue,
             PropertySetSnapshot parameters) : base(target, parameters)
         {
             _expression = expression;

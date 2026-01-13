@@ -16,12 +16,12 @@ public partial class Compositor
     {
         return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces, DiagnosticTextRenderer));
     }
-    
-    public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
-        
-    public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
 
-    public ExpressionAnimation CreateExpressionAnimation(string expression) => new ExpressionAnimation(this)
+    public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
+
+    public ExpressionAnimation<T> CreateExpressionAnimation<T>() where T : struct => new ExpressionAnimation<T>(this);
+
+    public ExpressionAnimation<T> CreateExpressionAnimation<T>(string expression) where T : struct => new ExpressionAnimation<T>(this)
     {
         Expression = expression
     };

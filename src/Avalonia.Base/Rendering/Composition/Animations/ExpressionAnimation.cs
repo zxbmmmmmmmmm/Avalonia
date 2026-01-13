@@ -1,5 +1,6 @@
 // ReSharper disable CheckNamespace
 using System;
+using Avalonia.Animation;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
@@ -16,11 +17,11 @@ namespace Avalonia.Rendering.Composition.Animations
     /// of Composition objects, mathematical functions and operators and Input.
     /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// </remarks>
-    public sealed class ExpressionAnimation : CompositionAnimation
+    public sealed class ExpressionAnimation<T> : CompositionAnimation where T : struct
     {
         private string? _expression;
         private Expression? _parsedExpression;
-        
+
         internal ExpressionAnimation(Compositor compositor) : base(compositor)
         {
         }
@@ -47,7 +48,8 @@ namespace Avalonia.Rendering.Composition.Animations
 
         internal override IAnimationInstance CreateInstance(
             ServerObject targetObject, ExpressionVariant? finalValue)
-            => new ExpressionAnimationInstance(ParsedExpression,
-                targetObject, finalValue, CreateSnapshot());
+            => new ExpressionAnimationInstance<T>(ParsedExpression,
+                targetObject, finalValue?.CastOrDefault<T>(), CreateSnapshot());
     }
+
 }

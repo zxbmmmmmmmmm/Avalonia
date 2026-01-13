@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.Composition.Animations;
 /// The base class for both key-frame and expression animation instances
 /// Is responsible for activation tracking and for subscribing to properties used in dependencies
 /// </summary>
-internal abstract class AnimationInstanceBase<T> : IAnimationInstance<T>
+internal abstract class AnimationInstanceBase<T> : IAnimationInstance<T> where T : struct
 {
     private List<(ServerObject obj, CompositionProperty member)>? _trackedObjects;
     protected PropertySetSnapshot Parameters { get; }
@@ -27,7 +27,7 @@ internal abstract class AnimationInstanceBase<T> : IAnimationInstance<T>
     {
         if (trackedObjects.Count > 0)
         {
-            _trackedObjects = new ();
+            _trackedObjects = new();
             foreach (var t in trackedObjects)
             {
                 var obj = Parameters.GetObjectParameter(t.name);

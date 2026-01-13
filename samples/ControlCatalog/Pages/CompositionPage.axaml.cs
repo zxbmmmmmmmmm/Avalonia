@@ -164,7 +164,7 @@ public partial class CompositionPage : UserControl
 
             _solidVisual.AnchorPoint = new (0, 0);
 
-            var scale = _solidVisual.Compositor.CreateVector3KeyFrameAnimation();
+            var scale = _solidVisual.Compositor.CreateVector3DKeyFrameAnimation();
             scale.Duration = TimeSpan.FromSeconds(5);
             scale.IterationBehavior = AnimationIterationBehavior.Forever;
             scale.InsertKeyFrame(0, new Vector3(1, 1, 0));
@@ -174,7 +174,7 @@ public partial class CompositionPage : UserControl
             _solidVisual.StartAnimation("Scale", scale);
 
             var center =
-                _solidVisual.Compositor.CreateExpressionAnimation(
+                _solidVisual.Compositor.CreateExpressionAnimation<Vector3D>(
                     "Vector3(this.Target.Size.X * 0.5, this.Target.Size.Y * 0.5, 1)");
             _solidVisual.StartAnimation("CenterPoint", center);
             Update();

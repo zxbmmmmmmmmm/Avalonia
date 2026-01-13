@@ -4,7 +4,7 @@ using Avalonia.Animation.Easings;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    
+
     /// <summary>
     /// A time-based animation with one or more key frames.
     /// These frames are markers, allowing developers to specify values at specific times for the animating property.
@@ -17,7 +17,7 @@ namespace Avalonia.Rendering.Composition.Animations
         internal KeyFrameAnimation(Compositor compositor) : base(compositor)
         {
         }
-        
+
         /// <summary>
         /// The delay behavior of the key frame animation.
         /// </summary>
@@ -27,7 +27,7 @@ namespace Avalonia.Rendering.Composition.Animations
         /// Delay before the animation starts after <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> is called.
         /// </summary>
         public System.TimeSpan DelayTime { get; set; }
-        
+
         /// <summary>
         /// The direction the animation is playing.
         /// The Direction property allows you to drive your animation from start to end or end to start or alternate
@@ -50,24 +50,24 @@ namespace Avalonia.Rendering.Composition.Animations
                 _duration = value;
             }
         }
-        
+
         /// <summary>
         /// The iteration behavior for the key frame animation.
         /// </summary>
         public AnimationIterationBehavior IterationBehavior { get; set; }
-        
+
         /// <summary>
         /// The number of times to repeat the key frame animation.
         /// </summary>
         public int IterationCount { get; set; } = 1;
-        
+
         /// <summary>
         /// Specifies how to set the property value when animation is stopped
         /// </summary>
         public AnimationStopBehavior StopBehavior { get; set; }
-        
+
         private protected abstract IKeyFrames KeyFrames { get; }
-        
+
         /// <summary>
         /// Inserts an expression keyframe.
         /// </summary>
