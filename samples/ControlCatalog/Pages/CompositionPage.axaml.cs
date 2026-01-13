@@ -96,7 +96,7 @@ public partial class CompositionPage : UserControl
         {
             var compositor = ElementComposition.GetElementVisual(this)!.Compositor;
 
-            var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+            var offsetAnimation = compositor.CreateVector3DKeyFrameAnimation();
             offsetAnimation.Target = "Offset";
             offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
             offsetAnimation.Duration = TimeSpan.FromMilliseconds(400);

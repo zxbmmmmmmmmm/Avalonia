@@ -9,7 +9,7 @@ namespace Avalonia.Rendering.Composition.Animations;
 /// The base class for both key-frame and expression animation instances
 /// Is responsible for activation tracking and for subscribing to properties used in dependencies
 /// </summary>
-internal abstract class AnimationInstanceBase : IAnimationInstance
+internal abstract class AnimationInstanceBase<T> : IAnimationInstance<T>
 {
     private List<(ServerObject obj, CompositionProperty member)>? _trackedObjects;
     protected PropertySetSnapshot Parameters { get; }
@@ -48,10 +48,10 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         Property = property;
     }
 
-    public abstract void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property);
-    protected abstract ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue);
+    public abstract void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty property);
+    protected abstract T EvaluateCore(TimeSpan now, T currentValue);
 
-    public ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue)
+    public T Evaluate(TimeSpan now, T currentValue)
     {
         _invalidated = false;
         return EvaluateCore(now, currentValue);

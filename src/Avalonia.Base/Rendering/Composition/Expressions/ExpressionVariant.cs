@@ -24,11 +24,17 @@ namespace Avalonia.Rendering.Composition.Expressions
         Color
     }
 
+    internal interface IExpressionVariant<TSelf>
+    {
+        public T CastOrDefault<T>() where T : struct;
+        public static abstract TSelf Create<T>(T v) where T : struct;
+    }
+
     /// <summary>
     /// A VARIANT type used in expression animations. Can represent multiple value types
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
-    internal struct ExpressionVariant
+    internal struct ExpressionVariant : IExpressionVariant<ExpressionVariant>
     {
         [FieldOffset(0)] public VariantType Type;
 

@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
         public ServerObjectAnimations? Animations => _animations;
         public ServerObjectAnimations GetOrCreateAnimations() => _animations ??= new(this);
         public bool IsActive => _activationCount != 0;
-            
+
         public ServerObject(ServerCompositor compositor) : base(compositor)
         {
         }
@@ -54,19 +54,28 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         protected void SetAnimatedValue<T>(CompositionProperty<T> prop, ref T field,
-            TimeSpan committedAt, IAnimationInstance animation) where T : struct
+            TimeSpan committedAt, IAnimationInstance<T> animation) where T : struct
         {
             GetOrCreateAnimations().OnSetAnimatedValue(prop, ref field, committedAt, animation);
         }
+
+        protected void SetAnimatedValue<T, TExpressionVariant>(CompositionProperty<T> prop, ref T field,
+            TimeSpan committedAt, IAnimationInstance<TExpressionVariant> animation) 
+            where T : struct
+            where TExpressionVariant : struct, IExpressionVariant<TExpressionVariant>
+        {
+            GetOrCreateAnimations().OnSetAnimatedValue(prop, ref field, committedAt, animation);
+        }
+
 
         protected void SetAnimatedValue<T>(CompositionProperty property, out T field, T value)
         {
             field = value;
             _animations?.RemoveAnimationForProperty(property);
         }
-        
+
         public virtual void NotifyAnimatedValueChanged(CompositionProperty prop) => ValuesInvalidated();
-        
+
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
