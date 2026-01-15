@@ -109,7 +109,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
             {
 
                 double wn = -Math.Log(DecayRate);
-                double settlingTimeBasedOnDecay = 5.8335 / 2 / wn;
+                double settlingTimeBasedOnDecay = 10 / 2 / wn;
 
                 if (TimeToMinimumVelocity < settlingTimeBasedOnDecay)
                 {
@@ -199,7 +199,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
             if (_dampingStateTimeInSeconds.HasValue)
             {
                 var settlingTime = TimeToMinimumVelocity - _dampingStateTimeInSeconds.Value;
-                var wn = 5.8335 / settlingTime;
+                var wn = 10 / settlingTime;
                 var elapsedInDamping = currentElapsedInSeconds - _dampingStateTimeInSeconds.Value;
 
                 // It seems WinUI can use an underdamped animation in some cases. For now we only use critically damped animation.
