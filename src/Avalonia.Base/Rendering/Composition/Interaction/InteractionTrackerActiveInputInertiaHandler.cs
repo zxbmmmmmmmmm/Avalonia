@@ -79,6 +79,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
     {
         private float? _dampingStateTimeInSeconds;
         private double? _dampingStatePosition;
+        private double? _initialDampingVelocity;
 
         internal InteractionTrackerActiveInputInertiaHandler Handler { get; }
         internal double DecayRate { get; }
@@ -202,19 +203,12 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
                 var elapsedInDamping = currentElapsedInSeconds - _dampingStateTimeInSeconds.Value;
 
                 // It seems WinUI can use an underdamped animation in some cases. For now we only use critically damped animation.
-                var progress = DampingHelper.SolveCriticallyDamped(wn, elapsedInDamping);
-                var finalProgress = DampingHelper.SolveCriticallyDamped(wn, settlingTime);
 
-                if (!CompositionMathHelpers.IsCloseRealZero(finalProgress))
-                {
-                    progress /= finalProgress;
-                }
-
-                progress = Math.Clamp(progress, 0.0, 1.0);
-
-                var value = progress * (FinalModifiedValue - _dampingStatePosition!.Value) + _dampingStatePosition.Value;
-
-                return value;
+                var target = FinalModifiedValue;
+                var y0 = _dampingStatePosition!.Value - target;
+                var currentOffset = DampingHelper.SolveCriticallyDampedWithVelocity(y0, _initialDampingVelocity!.Value, wn, elapsedInDamping);
+                var finalOffset = DampingHelper.SolveCriticallyDampedWithVelocity(y0, _initialDampingVelocity!.Value, wn, settlingTime);
+                return target + currentOffset - finalOffset;
             }
 
             var currentPosition = InitialValue + CalculateDeltaPosition(currentElapsedInSeconds);
@@ -225,6 +219,7 @@ internal sealed partial class InteractionTrackerActiveInputInertiaHandler : Serv
                 // This is an overpan from Interacting state. Use damping animation.
                 _dampingStateTimeInSeconds = Handler._stopwatch!.ElapsedMilliseconds / 1000.0f;
                 _dampingStatePosition = currentPosition;
+                _initialDampingVelocity = InitialVelocity * Math.Pow(DecayRate, currentElapsedInSeconds);
             }
 
             return currentPosition;
@@ -264,5 +259,15 @@ internal static class DampingHelper
     public static double SolveCriticallyDamped(double wn, double t)
     {
         return 1 - Math.Exp(-wn * t) * (1 + wn * t);
+    }
+
+    public static double SolveCriticallyDampedWithVelocity(double y0, double v0, double wn, double t)
+    {
+        // A = y0
+        // B = v0 + wn * y0
+        double exponent = Math.Exp(-wn * t);
+
+        // y(t) = (A + B*t) * e^(-wn * t)
+        return (y0 + (v0 + wn * y0) * t) * exponent;
     }
 }
