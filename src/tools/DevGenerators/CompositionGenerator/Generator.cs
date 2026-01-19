@@ -392,7 +392,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
     if(ImplicitAnimations != null && ImplicitAnimations.TryGetValue(""{prop.Name}"", out var animation) == true)
     {{
         // Animation affects only current property
-        if(animation is CompositionAnimation a)
+        if(animation is CompositionAnimation<{prop.Type}> a)
         {{
             {ChangedFieldsFieldName(cl)} |= {ChangedFieldsTypeName(cl)}.{prop.Name}Animated;
             PendingAnimations[{ClientProperty(cl, prop)}] = a.CreateInstance(this.Server, value);
@@ -412,7 +412,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 if (propertyName == ""{prop.Name}"")
 {{
 var current = {PropertyBackingFieldName(prop)};
-var server = animation.CreateInstance(this.Server, finalValue);
+var server = ((CompositionAnimation<{prop.Type}>)animation).CreateInstance(this.Server, ({prop.Type}?)finalValue);
 PendingAnimations[{ClientProperty(cl, prop)}] = server;
 {ChangedFieldsFieldName(cl)} |= {ChangedFieldsTypeName(cl)}.{prop.Name}Animated;
 RegisterForSerialization();
@@ -563,7 +563,7 @@ return;
             );
             return cl.AddMembers(
                 ((MethodDeclarationSyntax) ParseMemberDeclaration(
-                    "internal override void StartAnimation(string propertyName, CompositionAnimation animation, Avalonia.Rendering.Composition.Expressions.ExpressionVariant? finalValue){}")!)
+                    "internal override void StartAnimation(string propertyName, CompositionAnimation animation, object? finalValue){}")!)
                 .WithBody(body));
 
 

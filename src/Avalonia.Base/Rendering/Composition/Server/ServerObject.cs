@@ -54,7 +54,7 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         protected void SetAnimatedValue<T>(CompositionProperty<T> prop, ref T field,
-            TimeSpan committedAt, IAnimationInstance animation) where T : struct
+            TimeSpan committedAt, IAnimationInstance<T> animation) where T : struct
         {
             GetOrCreateAnimations().OnSetAnimatedValue(prop, ref field, committedAt, animation);
         }
@@ -68,6 +68,7 @@ namespace Avalonia.Rendering.Composition.Server
         public virtual void NotifyAnimatedValueChanged(CompositionProperty property) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
+
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
             if (_animations == null)

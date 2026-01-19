@@ -27,7 +27,7 @@ namespace Avalonia.Rendering.Composition
             Compositor = compositor;
             Server = server;
         }
-        
+
         /// <summary>
         /// The associated Compositor
         /// </summary>
@@ -59,8 +59,8 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
             => StartAnimation(propertyName, animation, null);
-        
-        internal virtual void StartAnimation(string propertyName, CompositionAnimation animation, ExpressionVariant? finalValue)
+
+        internal virtual void StartAnimation(string propertyName, CompositionAnimation animation, object? finalValue)
         {
             throw new ArgumentException("Unknown property " + propertyName);
         }
@@ -86,7 +86,7 @@ namespace Avalonia.Rendering.Composition
         {
             if (grp is CompositionAnimation animation)
             {
-                if(animation.Target == null)
+                if (animation.Target == null)
                     throw new ArgumentException("Animation Target can't be null");
                 StartAnimation(animation.Target, animation);
             }
@@ -103,7 +103,7 @@ namespace Avalonia.Rendering.Composition
 
         bool StartAnimationGroupPart(CompositionAnimation animation, string target, ExpressionVariant finalValue)
         {
-            if(animation.Target == null)
+            if (animation.Target == null)
                 throw new ArgumentException("Animation Target can't be null");
             if (animation.Target == target)
             {
@@ -116,7 +116,7 @@ namespace Avalonia.Rendering.Composition
                 return false;
             }
         }
-        
+
         internal bool StartAnimationGroup(ICompositionAnimationBase grp, string target, ExpressionVariant finalValue)
         {
             if (grp is CompositionAnimation animation)
@@ -163,8 +163,8 @@ namespace Avalonia.Rendering.Composition
         {
             if (Server == null)
                 throw new InvalidOperationException("The object doesn't have an associated server counterpart");
-            
-            if(_registeredForSerialization)
+
+            if (_registeredForSerialization)
                 return;
             _registeredForSerialization = true;
             Compositor.RegisterForSerialization(this);

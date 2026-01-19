@@ -20,6 +20,8 @@ namespace Avalonia.Rendering.Composition.Animations
     /// </remarks>
     public abstract class CompositionAnimation : CompositionObject, ICompositionAnimationBase
     {
+        public string? Target { get; set; }
+
         internal CompositionAnimation(Compositor compositor) : base(compositor, null)
         {
         }
@@ -37,7 +39,6 @@ namespace Avalonia.Rendering.Composition.Animations
         {
         }
 
-        public string? Target { get; set; }
 
         internal abstract IAnimationInstance CreateInstance(ServerObject targetObject,
             T? finalValue);

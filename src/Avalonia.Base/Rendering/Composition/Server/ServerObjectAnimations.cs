@@ -40,7 +40,6 @@ class ServerObjectAnimations
     abstract class ServerObjectAnimationInstance
     {
         public ServerObjectAnimations Owner { get; }
-        private ExpressionVariant _cachedVariant;
         public bool IsDirty { get; set; } = true;
         public bool NeedsUpdate { get; set; } = true;
         public IAnimationInstance Animation { get; }
@@ -51,18 +50,6 @@ class ServerObjectAnimations
             Owner = owner;
         }
 
-        public ExpressionVariant GetVariant()
-        {
-            var compositor = Owner._owner.Compositor;
-            if (!IsDirty)
-                return _cachedVariant;
-            
-            // We are setting this _before_ evaluating animation to prevent stack overflows due to potential
-            // cyclic references
-            IsDirty = false;
-
-            return _cachedVariant = Animation.Evaluate(Owner._owner.Compositor.ServerNow, _cachedVariant);
-        }
 
         public abstract void UpdateTargetProperty();
     }
@@ -70,11 +57,26 @@ class ServerObjectAnimations
     class ServerObjectAnimationInstance<T> : ServerObjectAnimationInstance where T : struct
     {
         private readonly CompositionProperty<T> _property;
+        private T _cachedVariant;
+        public new IAnimationInstance<T> Animation { get; }
 
-        public ServerObjectAnimationInstance(ServerObjectAnimations owner, IAnimationInstance animation,
+        public ServerObjectAnimationInstance(ServerObjectAnimations owner, IAnimationInstance<T> animation,
             CompositionProperty<T> property) : base(owner, animation)
         {
             _property = property;
+            Animation = animation;
+        }
+        public T GetVariant()
+        {
+            var compositor = Owner._owner.Compositor;
+            if (!IsDirty)
+                return _cachedVariant;
+
+            // We are setting this _before_ evaluating animation to prevent stack overflows due to potential
+            // cyclic references
+            IsDirty = false;
+
+            return _cachedVariant = Animation.Evaluate(Owner._owner.Compositor.ServerNow, _cachedVariant);
         }
 
         public override void UpdateTargetProperty()
@@ -82,7 +84,7 @@ class ServerObjectAnimations
             if (NeedsUpdate)
             {
                 NeedsUpdate = false;
-                _property.SetField(Owner._owner, GetVariant().CastOrDefault<T>());
+                _property.SetField(Owner._owner, GetVariant());
                 Owner._owner.NotifyAnimatedValueChanged(_property);
             }
         }
@@ -106,13 +108,13 @@ class ServerObjectAnimations
             subs.Invalidate();
     }
     
-    public void OnSetAnimatedValue<T>(CompositionProperty<T> prop, ref T field, TimeSpan committedAt, IAnimationInstance animation) where T : struct
+    public void OnSetAnimatedValue<T>(CompositionProperty<T> prop, ref T field, TimeSpan committedAt, IAnimationInstance<T> animation) where T : struct
     {
         if (_owner.IsActive && _animations.TryGetValue(prop, out var oldAnimation))
             oldAnimation.Animation.Deactivate();
         _animations[prop] = new ServerObjectAnimationInstance<T>(this, animation, prop);
             
-        animation.Initialize(committedAt, ExpressionVariant.Create(field), prop);
+        animation.Initialize(committedAt, field, prop);
         if(_owner.IsActive)
             animation.Activate();
             

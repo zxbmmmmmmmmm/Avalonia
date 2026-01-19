@@ -81,6 +81,7 @@ namespace Avalonia.Rendering.Composition.Animations
 
         public KeyFrameAnimation(Compositor compositor) : base(compositor)
         {
+            KeyFrames = new KeyFrames<T>();
         }
 
         internal override IAnimationInstance CreateInstance(Avalonia.Rendering.Composition.Server.ServerObject targetObject, T? finalValue) 
