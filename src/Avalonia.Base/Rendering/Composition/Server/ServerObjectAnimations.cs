@@ -142,20 +142,6 @@ class ServerObjectAnimations
         if(_subscriptions.TryGetValue(member, out var store))
             store.Subscribers?.ReleaseRef(animation);
     }
-    
-    public ExpressionVariant GetPropertyForAnimation(string name)
-    {
-        if (!_properties.TryGetValue(name, out var prop))
-            return default;
-
-        if (_subscriptions.TryGetValue(prop, out var subs))
-            subs.IsValid = true;
-        
-        if (_animations.TryGetValue(prop, out var animation))
-            return animation.GetVariant();
-
-        return prop.GetVariant?.Invoke(_owner) ?? default;
-    }
 
     public void EvaluateAnimations()
     {

@@ -12,7 +12,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// These frames are markers, allowing developers to specify values at specific times for the animating property.
     /// KeyFrame animations can be further customized by specifying how the animation interpolates between keyframes.
     /// </summary>
-    public abstract class KeyFrameAnimation<T> : CompositionAnimation<T> where T : struct
+    public class KeyFrameAnimation<T> : CompositionAnimation<T> where T : struct
     {
         private TimeSpan _duration = TimeSpan.FromMilliseconds(1);
 

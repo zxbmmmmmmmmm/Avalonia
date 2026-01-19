@@ -525,7 +525,7 @@ return;
             {
                 code = $@"
     if((changed & {changedFieldsType}.{prop.Name}Animated) == {changedFieldsType}.{prop.Name}Animated)
-            SetAnimatedValue({CompositionPropertyField(prop)}, ref {PropertyBackingFieldName(prop)}, committedAt, reader.ReadObject<IAnimationInstance>());
+            SetAnimatedValue({CompositionPropertyField(prop)}, ref {PropertyBackingFieldName(prop)}, committedAt, reader.ReadObject<IAnimationInstance<{prop.Type}>>());
     else ";
             }
 

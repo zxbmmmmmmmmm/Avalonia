@@ -23,6 +23,8 @@ public partial class Compositor
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
 
     public ExpressionAnimation<T> CreateExpressionAnimation<T>(Expression<Func<T>> expression) where T : struct => new ExpressionAnimation<T>(this, expression);
+    
+    public KeyFrameAnimation<T> CreateKeyFrameAnimation<T>() where T : struct => new KeyFrameAnimation<T>(this);
 
     public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
 

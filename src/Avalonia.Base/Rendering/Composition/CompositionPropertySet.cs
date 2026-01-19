@@ -111,32 +111,6 @@ namespace Avalonia.Rendering.Composition
             _objects.Remove(key);
             _variants.Remove(key);
         }
-
-        internal PropertySetSnapshot Snapshot() =>
-            SnapshotCore(1);
-        
-        private PropertySetSnapshot SnapshotCore(int allowedNestingLevel)
-        {
-            var dic = new Dictionary<string, PropertySetSnapshot.Value>(_objects.Count + _variants.Count);
-            foreach (var o in _objects)
-            {
-                if (o.Value is CompositionPropertySet ps)
-                {
-                    if (allowedNestingLevel <= 0)
-                        throw new InvalidOperationException("PropertySet depth limit reached");
-                    dic[o.Key] = new PropertySetSnapshot.Value(ps.SnapshotCore(allowedNestingLevel - 1));
-                }
-                else if (o.Value.Server == null)
-                    throw new InvalidOperationException($"Object of type {o.Value.GetType()} is not allowed");
-                else
-                    dic[o.Key] = new PropertySetSnapshot.Value((ServerObject)o.Value.Server);
-            }
-
-            foreach (var v in _variants)
-                dic[v.Key] = v.Value;
-            
-            return new PropertySetSnapshot(dic);
-        }
     }
 
     public enum CompositionGetValueStatus
