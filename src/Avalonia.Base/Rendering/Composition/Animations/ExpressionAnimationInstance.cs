@@ -6,45 +6,37 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    
+
     /// <summary>
     /// Server-side counterpart of <see cref="ExpressionAnimation"/> with values baked-in.
     /// </summary>
-    internal class ExpressionAnimationInstance : AnimationInstanceBase, IAnimationInstance
+    internal class ExpressionAnimationInstance<T> : AnimationInstanceBase<T> where T : struct
     {
-        private readonly Expression _expression;
-        private ExpressionVariant _startingValue;
-        private readonly ExpressionVariant? _finalValue;
+        private readonly CompositionExpression<T> _compositionExpresssion;
+        private T _startingValue;
+        private readonly T? _finalValue;
+        private HashSet<(ServerObject, CompositionProperty)> _trackedObjects;
 
-        protected override ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue)
+        protected override T EvaluateCore(TimeSpan now, T currentValue)
         {
-            var ctx = new ExpressionEvaluationContext
-            {
-                Parameters = Parameters,
-                Target = TargetObject,
-                ForeignFunctionInterface = BuiltInExpressionFfi.Instance,
-                StartingValue = _startingValue,
-                FinalValue = _finalValue ?? _startingValue,
-                CurrentValue = currentValue
-            };
-            return _expression.Evaluate(ref ctx);
+            return _compositionExpresssion.Evaluate();
         }
 
-        public override void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property)
+        public override void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty<T> property)
         {
             _startingValue = startingValue;
             var hs = new HashSet<(string, string)>();
-            _expression.CollectReferences(hs);
-            base.Initialize(property, hs);
+            base.Initialize(property, _trackedObjects);
         }
-        
-        public ExpressionAnimationInstance(Expression expression,
+
+        public ExpressionAnimationInstance(CompositionExpression<T> expression,
             ServerObject target,
-            ExpressionVariant? finalValue,
-            PropertySetSnapshot parameters) : base(target, parameters)
+            T? finalValue,
+            HashSet<(ServerObject, CompositionProperty)>? trackedObjects) : base(target)
         {
-            _expression = expression;
+            _compositionExpresssion = expression;
             _finalValue = finalValue;
+            _trackedObjects = trackedObjects ?? new();
         }
     }
 }

@@ -12,50 +12,30 @@ namespace Avalonia.Rendering.Composition.Animations;
 internal abstract class AnimationInstanceBase : IAnimationInstance
 {
     private List<(ServerObject obj, CompositionProperty member)>? _trackedObjects;
-    protected PropertySetSnapshot Parameters { get; }
     public ServerObject TargetObject { get; }
     protected CompositionProperty Property { get; private set; } = null!;
-    private bool _invalidated;
+    protected bool _invalidated;
 
-    public AnimationInstanceBase(ServerObject target, PropertySetSnapshot parameters)
+    public AnimationInstanceBase(ServerObject target)
     {
-        Parameters = parameters;
         TargetObject = target;
     }
 
-    protected void Initialize(CompositionProperty property, HashSet<(string name, string member)> trackedObjects)
+    protected void Initialize(CompositionProperty property, HashSet<(ServerObject name, CompositionProperty member)> trackedObjects)
     {
         if (trackedObjects.Count > 0)
         {
-            _trackedObjects = new ();
+            _trackedObjects = new();
             foreach (var t in trackedObjects)
             {
-                var obj = Parameters.GetObjectParameter(t.name);
-                if (obj is ServerObject tracked)
-                {
-                    var off = tracked.GetCompositionProperty(t.member);
-                    if (off == null)
-#if DEBUG
-                        throw new InvalidCastException("Attempting to subscribe to unknown field");
-#else
-                        continue;
-#endif
-                    _trackedObjects.Add((tracked, off));
-                }
+                trackedObjects.Add(t);
             }
         }
 
         Property = property;
     }
 
-    public abstract void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property);
-    protected abstract ExpressionVariant EvaluateCore(TimeSpan now, ExpressionVariant currentValue);
 
-    public ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue)
-    {
-        _invalidated = false;
-        return EvaluateCore(now, currentValue);
-    }
 
     public virtual void Activate()
     {
@@ -80,4 +60,20 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
     }
 
     public void OnTick() => Invalidate();
+}
+
+internal abstract class AnimationInstanceBase<T> : AnimationInstanceBase, IAnimationInstance<T>
+{
+    public AnimationInstanceBase(ServerObject target) : base(target)
+    {
+    }
+
+    public abstract void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty<T> property);
+    protected abstract T EvaluateCore(TimeSpan now, T currentValue);
+
+    public T Evaluate(TimeSpan now, T currentValue)
+    {
+        _invalidated = false;
+        return EvaluateCore(now, currentValue);
+    }
 }

@@ -6,11 +6,15 @@ namespace Avalonia.Rendering.Composition.Animations
 {
     internal interface IAnimationInstance : IServerClockItem
     {
-        ServerObject TargetObject { get; }
-        ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue);
-        void Initialize(TimeSpan startedAt, ExpressionVariant startingValue, CompositionProperty property);
         void Activate();
         void Deactivate();
         void Invalidate();
+    }
+
+    internal interface IAnimationInstance<T> : IAnimationInstance
+    {
+        ServerObject TargetObject { get; }
+        T Evaluate(TimeSpan now, T currentValue);
+        void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty<T> property);
     }
 }

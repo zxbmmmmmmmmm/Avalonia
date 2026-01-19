@@ -1,5 +1,6 @@
 // ReSharper disable CheckNamespace
 using System;
+using System.Linq.Expressions;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 
@@ -16,13 +17,14 @@ namespace Avalonia.Rendering.Composition.Animations
     /// of Composition objects, mathematical functions and operators and Input.
     /// Use the <see cref="CompositionObject.StartAnimation(string , CompositionAnimation)"/> method to start the animation.
     /// </remarks>
-    public sealed class ExpressionAnimation : CompositionAnimation
+    public sealed class ExpressionAnimation<T> : CompositionAnimation<T> where T : struct
     {
-        private string? _expression;
-        private Expression? _parsedExpression;
-        
-        internal ExpressionAnimation(Compositor compositor) : base(compositor)
+        private Expression<Func<T>> _expression;
+        private CompositionExpression<T>? _compositionExpression;
+
+        internal ExpressionAnimation(Compositor compositor, Expression<Func<T>> expression) : base(compositor)
         {
+            _expression = expression;
         }
 
         /// <summary>
@@ -33,21 +35,15 @@ namespace Avalonia.Rendering.Composition.Animations
         /// Although expressions can be defined by simple mathematical equations such as "2+2",
         /// the real power lies in creating mathematical relationships where the input values can change frame over frame.
         /// </summary>
-        public string? Expression
-        {
-            get => _expression;
-            set
-            {
-                _expression = value;
-                _parsedExpression = null;
-            }
-        }
 
-        private Expression ParsedExpression => _parsedExpression ??= ExpressionParser.Parse(_expression.AsSpan());
+        private CompositionExpression<T> CompositionExpression => _compositionExpression ??= new CompositionExpression<T>(_expression);
 
         internal override IAnimationInstance CreateInstance(
-            ServerObject targetObject, ExpressionVariant? finalValue)
-            => new ExpressionAnimationInstance(ParsedExpression,
-                targetObject, finalValue, CreateSnapshot());
+            ServerObject targetObject, T? finalValue)
+        {
+            // TODO:Compile expression and get tracked objects.
+            return new ExpressionAnimationInstance<T>(CompositionExpression, targetObject, finalValue, new());
+        }
+
     }
 }

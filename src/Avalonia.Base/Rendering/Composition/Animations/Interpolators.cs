@@ -1,83 +1,107 @@
 using System;
 using System.Numerics;
+using Avalonia.Media;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
     /// <summary>
     ///  An interface to define interpolation logic for a particular type
     /// </summary>
-    internal interface IInterpolator<T>
+    internal interface IInterpolator<T> 
     {
         T Interpolate(T from, T to, float progress);
+
+        static abstract IInterpolator<T> Instance { get; }
+    }
+
+    class Interpolators
+    {
+        public static IInterpolator<T> GetInterpolator<T>()
+        {
+            return typeof(T) switch
+            {
+                var t when t == typeof(float) => (IInterpolator<T>)ScalarInterpolator.Instance,
+                var t when t == typeof(double) => (IInterpolator<T>)DoubleInterpolator.Instance,
+                var t when t == typeof(Vector2) => (IInterpolator<T>)Vector2Interpolator.Instance,
+                var t when t == typeof(Vector) => (IInterpolator<T>)VectorInterpolator.Instance,
+                var t when t == typeof(Vector3) => (IInterpolator<T>)Vector3Interpolator.Instance,
+                var t when t == typeof(Vector3D) => (IInterpolator<T>)Vector3DInterpolator.Instance,
+                var t when t == typeof(Vector4) => (IInterpolator<T>)Vector4Interpolator.Instance,
+                var t when t == typeof(Quaternion) => (IInterpolator<T>)QuaternionInterpolator.Instance,
+                var t when t == typeof(Color) => (IInterpolator<T>)ColorInterpolator.Instance,
+                var t when t == typeof(bool) => (IInterpolator<T>)BooleanInterpolator.Instance,
+                _ => throw new NotSupportedException($"Unsupported type: {typeof(T)}")
+            };
+        }
     }
 
     class ScalarInterpolator : IInterpolator<float>
     {
         public float Interpolate(float @from, float to, float progress) => @from + (to - @from) * progress;
-        
-        public static ScalarInterpolator Instance { get; } = new ScalarInterpolator();
+
+        public static IInterpolator<float> Instance { get; } = new ScalarInterpolator();
     }
     class DoubleInterpolator : IInterpolator<double>
     {
         public double Interpolate(double @from, double to, float progress) => @from + (to - @from) * progress;
-        
-        public static DoubleInterpolator Instance { get; } = new ();
+
+        public static IInterpolator<double> Instance { get; } = new DoubleInterpolator();
     }
 
     class Vector2Interpolator : IInterpolator<Vector2>
     {
-        public Vector2 Interpolate(Vector2 @from, Vector2 to, float progress) 
+        public Vector2 Interpolate(Vector2 @from, Vector2 to, float progress)
             => Vector2.Lerp(@from, to, progress);
-        
-        public static Vector2Interpolator Instance { get; } = new Vector2Interpolator();
+
+        public static IInterpolator<Vector2> Instance { get; } = new Vector2Interpolator();
     }
-    
+
     class VectorInterpolator : IInterpolator<Vector>
     {
         public Vector Interpolate(Vector @from, Vector to, float progress)
             => new(DoubleInterpolator.Instance.Interpolate(from.X, to.X, progress),
                 DoubleInterpolator.Instance.Interpolate(from.Y, to.Y, progress));
-        
-        public static VectorInterpolator Instance { get; } = new ();
+
+        public static IInterpolator<Vector> Instance { get; } = new VectorInterpolator();
     }
-    
+
     class Vector3Interpolator : IInterpolator<Vector3>
     {
-        public Vector3 Interpolate(Vector3 @from, Vector3 to, float progress) 
+        public Vector3 Interpolate(Vector3 @from, Vector3 to, float progress)
             => Vector3.Lerp(@from, to, progress);
-        
-        public static Vector3Interpolator Instance { get; } = new Vector3Interpolator();
+
+        public static IInterpolator<Vector3> Instance { get; } = new Vector3Interpolator();
     }
-    
+
     class Vector3DInterpolator : IInterpolator<Vector3D>
     {
         public Vector3D Interpolate(Vector3D @from, Vector3D to, float progress)
             => new(DoubleInterpolator.Instance.Interpolate(from.X, to.X, progress),
                 DoubleInterpolator.Instance.Interpolate(from.Y, to.Y, progress),
                 DoubleInterpolator.Instance.Interpolate(from.Z, to.Z, progress));
-        
-        public static Vector3DInterpolator Instance { get; } = new ();
+
+        public static IInterpolator<Vector3D> Instance { get; } = new Vector3DInterpolator();
     }
-    
+
     class Vector4Interpolator : IInterpolator<Vector4>
     {
-        public Vector4 Interpolate(Vector4 @from, Vector4 to, float progress) 
+        public Vector4 Interpolate(Vector4 @from, Vector4 to, float progress)
             => Vector4.Lerp(@from, to, progress);
-        
-        public static Vector4Interpolator Instance { get; } = new Vector4Interpolator();
+
+        public static IInterpolator<Vector4> Instance { get; } = new Vector4Interpolator();
     }
-    
+
     class QuaternionInterpolator : IInterpolator<Quaternion>
     {
-        public Quaternion Interpolate(Quaternion @from, Quaternion to, float progress) 
+        public Quaternion Interpolate(Quaternion @from, Quaternion to, float progress)
             => Quaternion.Lerp(@from, to, progress);
 
-        public static QuaternionInterpolator Instance { get; } = new QuaternionInterpolator();
+        public static IInterpolator<Quaternion> Instance { get; } = new QuaternionInterpolator();
     }
-    
+
     class ColorInterpolator : IInterpolator<Avalonia.Media.Color>
     {
-        static byte Lerp(float a, float b, float p) => (byte) Math.Max(0, Math.Min(255, (p * (b - a) + a)));
+        static byte Lerp(float a, float b, float p) => (byte)Math.Max(0, Math.Min(255, (p * (b - a) + a)));
 
         public static Avalonia.Media.Color
             LerpRGB(Avalonia.Media.Color to, Avalonia.Media.Color from, float progress) =>
@@ -88,14 +112,14 @@ namespace Avalonia.Rendering.Composition.Animations
 
         public Avalonia.Media.Color Interpolate(Avalonia.Media.Color @from, Avalonia.Media.Color to, float progress)
             => LerpRGB(@from, to, progress);
-        
-        public static ColorInterpolator Instance { get; } = new ColorInterpolator();
+
+        public static IInterpolator<Avalonia.Media.Color> Instance { get; } = new ColorInterpolator();
     }
 
     class BooleanInterpolator : IInterpolator<bool>
     {
         public bool Interpolate(bool @from, bool to, float progress) => progress >= 1 ? to : @from;
-        
-        public static BooleanInterpolator Instance { get; } = new BooleanInterpolator();
+
+        public static IInterpolator<bool> Instance { get; } = new BooleanInterpolator();
     }
 }

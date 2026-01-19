@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Avalonia.Platform;
 using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering.Composition.Animations;
@@ -20,13 +21,8 @@ public partial class Compositor
     }
     
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
-        
-    public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
 
-    public ExpressionAnimation CreateExpressionAnimation(string expression) => new ExpressionAnimation(this)
-    {
-        Expression = expression
-    };
+    public ExpressionAnimation<T> CreateExpressionAnimation<T>(Expression<Func<T>> expression) where T : struct => new ExpressionAnimation<T>(this, expression);
 
     public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
 

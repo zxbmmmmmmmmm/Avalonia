@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using Avalonia.Animation.Easings;
 using Avalonia.Rendering.Composition.Expressions;
 
@@ -10,7 +11,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// Collection of composition animation key frames
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class KeyFrames<T> : List<KeyFrame<T>>, IKeyFrames
+    class KeyFrames<T> : List<KeyFrame<T>>, IKeyFrames<T>
     {
         void Validate(float key)
         {
@@ -20,13 +21,13 @@ namespace Avalonia.Rendering.Composition.Animations
                 throw new ArgumentException("Key frame key " + key + " is less than the previous one");
         }
         
-        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value, IEasing easingFunction)
+        public void InsertExpressionKeyFrame(float normalizedProgressKey, CompositionExpression<T> value, IEasing easingFunction)
         {
             Validate(normalizedProgressKey);
             Add(new KeyFrame<T>
             {
                 NormalizedProgressKey = normalizedProgressKey,
-                Expression = Expression.Parse(value),
+                Expression = value,
                 EasingFunction = easingFunction
             });
         }
@@ -67,7 +68,7 @@ namespace Avalonia.Rendering.Composition.Animations
     {
         public float NormalizedProgressKey;
         public T Value;
-        public Expression Expression;
+        public CompositionExpression<T>? Expression;
         public IEasing EasingFunction;
     }
     
@@ -77,13 +78,13 @@ namespace Avalonia.Rendering.Composition.Animations
     struct ServerKeyFrame<T>
     {
         public T Value;
-        public Expression? Expression;
+        public CompositionExpression<T>? Expression;
         public IEasing EasingFunction;
         public float Key;
     }
     
-    interface IKeyFrames
+    interface IKeyFrames<T>
     {
-        public void InsertExpressionKeyFrame(float normalizedProgressKey, string value, IEasing easingFunction);
+        public void InsertExpressionKeyFrame(float normalizedProgressKey, CompositionExpression<T> value, IEasing easingFunction);
     }
 }
