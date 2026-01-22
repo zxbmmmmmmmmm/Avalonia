@@ -198,9 +198,9 @@ namespace ControlCatalog.Pages
 
                 if (ballCompositionVisual != null)
                 {
-                    var offsetAnimation = ballCompositionVisual.Compositor.CreateVector3KeyFrameAnimation();
+                    var offsetAnimation = ballCompositionVisual.Compositor.CreateVector3DKeyFrameAnimation();
                     offsetAnimation.Target = "Offset";
-                    offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+                    offsetAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue);
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(100);
 
                     var implicitAnimations = ballCompositionVisual.Compositor.CreateImplicitAnimationCollection();

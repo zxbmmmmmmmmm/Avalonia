@@ -101,7 +101,7 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        bool StartAnimationGroupPart(CompositionAnimation animation, string target, ExpressionVariant finalValue)
+        bool StartAnimationGroupPart(CompositionAnimation animation, string target, object finalValue)
         {
             if (animation.Target == null)
                 throw new ArgumentException("Animation Target can't be null");
@@ -117,7 +117,7 @@ namespace Avalonia.Rendering.Composition
             }
         }
 
-        internal bool StartAnimationGroup(ICompositionAnimationBase grp, string target, ExpressionVariant finalValue)
+        internal bool StartAnimationGroup(ICompositionAnimationBase grp, string target, object finalValue)
         {
             if (grp is CompositionAnimation animation)
                 return StartAnimationGroupPart(animation, target, finalValue);

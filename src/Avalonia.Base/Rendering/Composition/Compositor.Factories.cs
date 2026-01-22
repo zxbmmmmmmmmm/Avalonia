@@ -25,8 +25,26 @@ public partial class Compositor
 
     public ExpressionAnimation<T> CreateExpressionAnimation<T>(Expression<Func<ExpressionEvaluationContext<T>, T>> expression) where T : struct => new ExpressionAnimation<T>(this, expression);
 
-    public KeyFrameAnimation<T> CreateKeyFrameAnimation<T>() where T : struct => new KeyFrameAnimation<T>(this);
+    public BooleanKeyFrameAnimation CreateBooleanKeyFrameAnimation() => new BooleanKeyFrameAnimation(this);
 
+    public ColorKeyFrameAnimation CreateColorKeyFrameAnimation() => new ColorKeyFrameAnimation(this);
+
+    public DoubleKeyFrameAnimation CreateDoubleKeyFrameAnimation() => new DoubleKeyFrameAnimation(this);
+
+    public QuaternionKeyFrameAnimation CreateQuaternionKeyFrameAnimation() => new QuaternionKeyFrameAnimation(this);
+
+    public ScalarKeyFrameAnimation CreateScalarKeyFrameAnimation() => new ScalarKeyFrameAnimation(this);
+
+    public Vector2KeyFrameAnimation CreateVector2KeyFrameAnimation() => new Vector2KeyFrameAnimation(this);
+
+    public Vector3KeyFrameAnimation CreateVector3KeyFrameAnimation() => new Vector3KeyFrameAnimation(this);
+
+    public Vector3DKeyFrameAnimation CreateVector3DKeyFrameAnimation() => new Vector3DKeyFrameAnimation(this);
+
+    public Vector4KeyFrameAnimation CreateVector4KeyFrameAnimation() => new Vector4KeyFrameAnimation(this);
+
+    public VectorKeyFrameAnimation CreateVectorKeyFrameAnimation() => new VectorKeyFrameAnimation(this); 
+    
     public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
 
     public CompositionAnimationGroup CreateAnimationGroup() => new CompositionAnimationGroup(this);

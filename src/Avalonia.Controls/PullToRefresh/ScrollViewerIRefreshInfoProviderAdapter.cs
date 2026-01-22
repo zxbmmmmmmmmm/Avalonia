@@ -159,9 +159,9 @@ namespace Avalonia.Controls.PullToRefresh
             {
                 var compositor = visualizerComposition.Compositor;
 
-                var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+                var offsetAnimation = compositor.CreateVector3DKeyFrameAnimation();
                 offsetAnimation.Target = "Offset";
-                offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+                offsetAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue);
                 offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
 
                 var animation = compositor.CreateImplicitAnimationCollection();
@@ -177,9 +177,9 @@ namespace Avalonia.Controls.PullToRefresh
                 {
                     var compositor = scollContentComposition.Compositor;
 
-                    var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+                    var offsetAnimation = compositor.CreateVector3DKeyFrameAnimation();
                     offsetAnimation.Target = "Offset";
-                    offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+                    offsetAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue);
                     offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
 
                     var animation = compositor.CreateImplicitAnimationCollection();

@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         private float _startingRotationAngle;
         private double _interactionRatio;
         private bool _played;
-        private ScalarKeyFrameAnimation? _rotateAnimation;
+        private KeyFrameAnimation<float>? _rotateAnimation;
 
         private bool IsPullDirectionVertical => PullDirection == PullDirection.TopToBottom || PullDirection == PullDirection.BottomToTop;
         private bool IsPullDirectionFar => PullDirection == PullDirection.BottomToTop || PullDirection == PullDirection.RightToLeft;
@@ -155,22 +155,22 @@ namespace Avalonia.Controls
 
             var smoothRotationAnimation = compositor.CreateScalarKeyFrameAnimation();
             smoothRotationAnimation.Target = "RotationAngle";
-            smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            smoothRotationAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue , new LinearEasing());
             smoothRotationAnimation.Duration = TimeSpan.FromMilliseconds(100);
 
             var opacityAnimation = compositor.CreateScalarKeyFrameAnimation();
             opacityAnimation.Target = "Opacity";
-            opacityAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            opacityAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue, new LinearEasing());
             opacityAnimation.Duration = TimeSpan.FromMilliseconds(100);
 
-            var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+            var offsetAnimation = compositor.CreateVector3DKeyFrameAnimation();
             offsetAnimation.Target = "Offset";
-            offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            offsetAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue, new LinearEasing());
             offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
 
-            var scaleAnimation = compositor.CreateVector3KeyFrameAnimation();
+            var scaleAnimation = compositor.CreateVector3DKeyFrameAnimation();
             scaleAnimation.Target = "Scale";
-            scaleAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue", new LinearEasing());
+            scaleAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue, new LinearEasing());
             scaleAnimation.Duration = TimeSpan.FromMilliseconds(100);
 
             var animation = compositor.CreateImplicitAnimationCollection();

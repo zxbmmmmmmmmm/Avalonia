@@ -1,7 +1,9 @@
 using System;
 using System.Linq.Expressions;
+using System.Numerics;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
+using Avalonia.Media;
 using Avalonia.Rendering.Composition.Expressions;
 
 namespace Avalonia.Rendering.Composition.Animations
@@ -12,7 +14,7 @@ namespace Avalonia.Rendering.Composition.Animations
     /// These frames are markers, allowing developers to specify values at specific times for the animating property.
     /// KeyFrame animations can be further customized by specifying how the animation interpolates between keyframes.
     /// </summary>
-    public class KeyFrameAnimation<T> : CompositionAnimation<T> where T : struct
+    public abstract class KeyFrameAnimation<T> : CompositionAnimation<T> where T : struct
     {
         private TimeSpan _duration = TimeSpan.FromMilliseconds(1);
 
@@ -65,7 +67,7 @@ namespace Avalonia.Rendering.Composition.Animations
         /// </summary>
         public AnimationStopBehavior StopBehavior { get; set; }
 
-        private protected IKeyFrames<T> KeyFrames { get; }
+        private protected KeyFrames<T> KeyFrames { get; }
 
         /// <summary>
         /// Inserts an expression keyframe.
@@ -86,23 +88,32 @@ namespace Avalonia.Rendering.Composition.Animations
 
         internal override IAnimationInstance CreateInstance(Avalonia.Rendering.Composition.Server.ServerObject targetObject, T? finalValue)
         {
-            return new KeyFrameAnimationInstance<T>(Interpolators.GetInterpolator<T>(), _keyFrames.Snapshot(),
+            return new KeyFrameAnimationInstance<T>(Interpolators.GetInterpolator<T>(), KeyFrames.Snapshot(),
                 finalValue, targetObject,
                 DelayBehavior, DelayTime, Direction, Duration, IterationBehavior,
                 IterationCount, StopBehavior);
         }
 
-        private KeyFrames<T> _keyFrames = new KeyFrames<T>();
         public void InsertKeyFrame(float normalizedProgressKey, T value, Avalonia.Animation.Easings.IEasing easingFunction)
         {
-            _keyFrames.Insert(normalizedProgressKey, value, easingFunction);
+            KeyFrames.Insert(normalizedProgressKey, value, easingFunction);
         }
 
         public void InsertKeyFrame(float normalizedProgressKey, T value)
         {
-            _keyFrames.Insert(normalizedProgressKey, value, Compositor.DefaultEasing);
+            KeyFrames.Insert(normalizedProgressKey, value, Compositor.DefaultEasing);
         }
     }
+    public sealed class BooleanKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<bool>(compositor);
+    public sealed class ColorKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Color>(compositor);
+    public sealed class DoubleKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<double>(compositor);
+    public sealed class QuaternionKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Quaternion>(compositor);
+    public sealed class ScalarKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<float>(compositor);
+    public sealed class Vector2KeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Vector2>(compositor);
+    public sealed class Vector3DKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Vector3D>(compositor);
+    public sealed class Vector3KeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Vector3>(compositor);
+    public sealed class Vector4KeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Vector4>(compositor);
+    public sealed class VectorKeyFrameAnimation(Compositor compositor) : KeyFrameAnimation<Vector>(compositor);
 
     /// <summary>
     /// Specifies the animation delay behavior.

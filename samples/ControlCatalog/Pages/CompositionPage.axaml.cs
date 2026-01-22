@@ -10,6 +10,7 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
+using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.VisualTree;
 using Math = System.Math;
 
@@ -96,12 +97,12 @@ public partial class CompositionPage : UserControl
         {
             var compositor = ElementComposition.GetElementVisual(this)!.Compositor;
 
-            var offsetAnimation = compositor.CreateKeyFrameAnimation<Vector3>();
+            var offsetAnimation = compositor.CreateVector3DKeyFrameAnimation();
             offsetAnimation.Target = "Offset";
-            offsetAnimation.InsertExpressionKeyFrame(1.0f, () => offsetAnimation.FinalValue);
+            offsetAnimation.InsertExpressionKeyFrame(1.0f, (ctx) => ctx.FinalValue);
             offsetAnimation.Duration = TimeSpan.FromMilliseconds(400);
 
-            var rotationAnimation = compositor.CreateKeyFrameAnimation<float>();
+            var rotationAnimation = compositor.CreateScalarKeyFrameAnimation();
             rotationAnimation.Target = "RotationAngle";
             rotationAnimation.InsertKeyFrame(.5f, 0.160f);
             rotationAnimation.InsertKeyFrame(1f, 0f);
@@ -153,7 +154,7 @@ public partial class CompositionPage : UserControl
             _solidVisual = compositor.CreateSolidColorVisual();
             ElementComposition.SetElementChildVisual(v, _solidVisual);
             _solidVisual.Color = Colors.Red;
-            var animation = _solidVisual.Compositor.CreateKeyFrameAnimation<Color>();
+            var animation = _solidVisual.Compositor.CreateColorKeyFrameAnimation();
             animation.InsertKeyFrame(0, Colors.Red);
             animation.InsertKeyFrame(0.5f, Colors.Blue);
             animation.InsertKeyFrame(1, Colors.Green);
@@ -164,7 +165,7 @@ public partial class CompositionPage : UserControl
 
             _solidVisual.AnchorPoint = new (0, 0);
 
-            var scale = _solidVisual.Compositor.CreateKeyFrameAnimation<Vector3>();
+            var scale = _solidVisual.Compositor.CreateVector3DKeyFrameAnimation();
             scale.Duration = TimeSpan.FromSeconds(5);
             scale.IterationBehavior = AnimationIterationBehavior.Forever;
             scale.InsertKeyFrame(0, new Vector3(1, 1, 0));
@@ -174,7 +175,7 @@ public partial class CompositionPage : UserControl
             _solidVisual.StartAnimation("Scale", scale);
 
             var center =
-                _solidVisual.Compositor.CreateExpressionAnimation(() => new Vector3D(_solidVisual.Size.X * 0.5, _solidVisual.Size.Y * 0.5, 1));
+                _solidVisual.Compositor.CreateExpressionAnimation<Vector3D>((_) => new Vector3D(_solidVisual.Size.X * 0.5, _solidVisual.Size.Y * 0.5, 1));
             _solidVisual.StartAnimation("CenterPoint", center);
             Update();
         };
