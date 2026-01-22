@@ -19,7 +19,13 @@ namespace Avalonia.Rendering.Composition.Animations
 
         protected override T EvaluateCore(TimeSpan now, T currentValue)
         {
-            return _compositionExpresssion.Evaluate();
+            var ctx = new ExpressionEvaluationContext<T>
+            {
+                StartingValue = _startingValue,
+                FinalValue = _finalValue ?? _startingValue,
+                CurrentValue = currentValue
+            };
+            return _compositionExpresssion.Evaluate(ref ctx);
         }
 
         public override void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty<T> property)

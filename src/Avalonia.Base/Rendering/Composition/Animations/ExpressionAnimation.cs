@@ -19,10 +19,10 @@ namespace Avalonia.Rendering.Composition.Animations
     /// </remarks>
     public sealed class ExpressionAnimation<T> : CompositionAnimation<T> where T : struct
     {
-        private Expression<Func<T>> _expression;
+        private Expression<Func<ExpressionEvaluationContext<T>, T>> _expression;
         private CompositionExpression<T>? _compositionExpression;
 
-        internal ExpressionAnimation(Compositor compositor, Expression<Func<T>> expression) : base(compositor)
+        internal ExpressionAnimation(Compositor compositor, Expression<Func<ExpressionEvaluationContext<T>, T>> expression) : base(compositor)
         {
             _expression = expression;
         }

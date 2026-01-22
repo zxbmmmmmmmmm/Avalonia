@@ -6,12 +6,12 @@ using Avalonia.Rendering.Composition.Expressions;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    
+
     /// <summary>
     /// Collection of composition animation key frames
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class KeyFrames<T> : List<KeyFrame<T>>, IKeyFrames<T>
+    class KeyFrames<T> : List<KeyFrame<T>>, IKeyFrames<T> where T : struct
     {
         void Validate(float key)
         {
@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Animations
             if (Count > 0 && this[Count - 1].NormalizedProgressKey > key)
                 throw new ArgumentException("Key frame key " + key + " is less than the previous one");
         }
-        
+
         public void InsertExpressionKeyFrame(float normalizedProgressKey, CompositionExpression<T> value, IEasing easingFunction)
         {
             Validate(normalizedProgressKey);
@@ -64,26 +64,26 @@ namespace Avalonia.Rendering.Composition.Animations
     /// <summary>
     /// Composition animation key frame
     /// </summary>
-    struct KeyFrame<T>
+    struct KeyFrame<T> where T : struct
     {
         public float NormalizedProgressKey;
         public T Value;
         public CompositionExpression<T>? Expression;
         public IEasing EasingFunction;
     }
-    
+
     /// <summary>
     /// Server-side composition animation key frame
     /// </summary>
-    struct ServerKeyFrame<T>
+    struct ServerKeyFrame<T> where T : struct
     {
         public T Value;
         public CompositionExpression<T>? Expression;
         public IEasing EasingFunction;
         public float Key;
     }
-    
-    interface IKeyFrames<T>
+
+    interface IKeyFrames<T> where T : struct
     {
         public void InsertExpressionKeyFrame(float normalizedProgressKey, CompositionExpression<T> value, IEasing easingFunction);
     }

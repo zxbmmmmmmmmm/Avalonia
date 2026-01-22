@@ -2,14 +2,13 @@ using System.Collections.Generic;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
-    internal struct ExpressionEvaluationContext
+    public struct ExpressionEvaluationContext<T> where T : struct
     {
-        public ExpressionVariant StartingValue { get; set; }
-        public ExpressionVariant CurrentValue { get; set; }
-        public ExpressionVariant FinalValue { get; set; }
-        public IExpressionObject Target { get; set; }
-        public IExpressionParameterCollection Parameters { get; set; }
-        public IExpressionForeignFunctionInterface ForeignFunctionInterface { get; set; }
+        public T StartingValue { get; set; }
+        public T CurrentValue { get; set; }
+        public T FinalValue { get; set; }
+        internal IExpressionObject Target { get; set; }
+        internal IExpressionParameterCollection Parameters { get; set; }
     }
 
     internal interface IExpressionObject

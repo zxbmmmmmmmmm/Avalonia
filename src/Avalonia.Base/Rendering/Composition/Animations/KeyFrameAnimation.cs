@@ -75,7 +75,7 @@ namespace Avalonia.Rendering.Composition.Animations
         /// </param>
         /// <param name="value">The expression used to calculate the value of the key frame.</param>
         /// <param name="easingFunction">The easing function to use when interpolating between frames.</param>
-        public void InsertExpressionKeyFrame(float normalizedProgressKey, Expression<Func<T>> value,
+        public void InsertExpressionKeyFrame(float normalizedProgressKey, Expression<Func<ExpressionEvaluationContext<T>, T>> value,
             Easing? easingFunction = null) =>
             KeyFrames.InsertExpressionKeyFrame(normalizedProgressKey, new CompositionExpression<T>(value), easingFunction ?? Compositor.DefaultEasing);
 
@@ -84,9 +84,9 @@ namespace Avalonia.Rendering.Composition.Animations
             KeyFrames = new KeyFrames<T>();
         }
 
-        internal override IAnimationInstance CreateInstance(Avalonia.Rendering.Composition.Server.ServerObject targetObject, T? finalValue) 
+        internal override IAnimationInstance CreateInstance(Avalonia.Rendering.Composition.Server.ServerObject targetObject, T? finalValue)
         {
-            return new KeyFrameAnimationInstance<T>(Interpolators.GetInterpolator<T>(), _keyFrames.Snapshot(), 
+            return new KeyFrameAnimationInstance<T>(Interpolators.GetInterpolator<T>(), _keyFrames.Snapshot(),
                 finalValue, targetObject,
                 DelayBehavior, DelayTime, Direction, Duration, IterationBehavior,
                 IterationCount, StopBehavior);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
@@ -72,10 +73,16 @@ namespace Avalonia.Rendering.Composition.Animations
 
         private T EvaluateImpl(TimeSpan elapsed, T currentValue)
         {
+            var ctx = new ExpressionEvaluationContext<T>
+            {
+                CurrentValue = currentValue,
+                FinalValue = _finalValue ?? _startingValue,
+                StartingValue = _startingValue,
+            };
             if (elapsed < _delayTime)
             {
                 if (_delayBehavior == AnimationDelayBehavior.SetInitialValueBeforeDelay)
-                    return KeyFrameAnimationInstance<T>.GetKeyFrame(_keyFrames[0]);
+                    return KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, _keyFrames[0]);
                 return currentValue;
             }
 
@@ -83,7 +90,7 @@ namespace Avalonia.Rendering.Composition.Animations
             var iterationNumber = elapsed.Ticks / _duration.Ticks;
             if (_iterationBehavior == AnimationIterationBehavior.Count
                 && iterationNumber >= _iterationCount)
-                return KeyFrameAnimationInstance<T>.GetKeyFrame(_keyFrames[_keyFrames.Length - 1]);
+                return KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, _keyFrames[_keyFrames.Length - 1]);
 
 
             var evenIterationNumber = iterationNumber % 2 == 0;
@@ -112,7 +119,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 {
                     // this is the last frame
                     if (c == _keyFrames.Length - 1)
-                        return KeyFrameAnimationInstance<T>.GetKeyFrame(kf);
+                        return KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, kf);
 
                     left = kf;
                     right = _keyFrames[c + 1];
@@ -135,16 +142,16 @@ namespace Avalonia.Rendering.Composition.Animations
                 return currentValue;
 
             return _interpolator.Interpolate(
-                KeyFrameAnimationInstance<T>.GetKeyFrame(left),
-                KeyFrameAnimationInstance<T>.GetKeyFrame(right),
+                KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, left),
+                KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, right),
                 easedKeyProgress
             );
         }
 
-        static T GetKeyFrame(ServerKeyFrame<T> f)
+        static T GetKeyFrame(ref ExpressionEvaluationContext<T> ctx, ServerKeyFrame<T> f)
         {
             if (f.Expression != null)
-                return f.Expression.Evaluate();
+                return f.Expression.Evaluate(ref ctx);
             else
                 return f.Value;
         }
