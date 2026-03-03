@@ -1111,7 +1111,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         if (Child.UseLayoutRounding)
         {
             var layoutScale = LayoutHelper.GetLayoutScale(Child);
-            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, layoutScale, layoutScale);
+            childMargin = LayoutHelper.RoundLayoutThickness(childMargin, layoutScale);
         }
 
         var baseExtent = Child.Bounds.Size.Inflate(childMargin);
