@@ -65,8 +65,8 @@ namespace Avalonia.Rendering.Composition.Server
             field = value;
             _animations?.RemoveAnimationForProperty(property);
         }
-
-        public virtual void NotifyAnimatedValueChanged(CompositionProperty prop) => ValuesInvalidated();
+        
+        public virtual void NotifyAnimatedValueChanged(CompositionProperty property) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
         ExpressionVariant IExpressionObject.GetProperty(string name)

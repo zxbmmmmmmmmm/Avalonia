@@ -62,8 +62,8 @@ namespace Avalonia.LinuxFramebuffer
                 ? new UiThreadRenderTimer(opts.Fps)
                 : new DefaultRenderTimer(opts.Fps);
             
+            Dispatcher.InitializeUIThreadDispatcher(new EpollDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)));
             AvaloniaLocator.CurrentMutable
-                .Bind<IDispatcherImpl>().ToConstant(new EpollDispatcherImpl(new ManualRawEventGrouperDispatchQueueDispatcherInputProvider(EventGrouperDispatchQueue)))
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
@@ -142,7 +142,10 @@ namespace Avalonia.LinuxFramebuffer
         {
             get
             {
-                EnsureTopLevel();
+                if (_topLevel == null)
+                {
+                    EnsureTopLevel();
+                }
                 return _topLevel;
             }
         }

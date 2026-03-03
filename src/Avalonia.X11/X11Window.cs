@@ -267,7 +267,9 @@ namespace Avalonia.X11
                     ? DBusSystemDialog.TryCreateAsync(Handle)
                     : Task.FromResult<IStorageProvider?>(null),
                 () => GtkSystemDialog.TryCreate(this),
-                () => Task.FromResult(InputRoot is TopLevel tl
+                // TODO: This will be incompatible with "root element is not a TopLevel" scenarios,
+                // HACK: this relies on focus root being TopLevel which currently is true
+                () => Task.FromResult(InputRoot.FocusRoot is TopLevel tl
                     ? (IStorageProvider?)new ManagedStorageProvider(tl)
                     : null)
             });
@@ -1024,6 +1026,17 @@ namespace Avalonia.X11
                 return;
             _cleaningUp = true;
             
+            // Remove from AT-SPI tree before closing
+            _platform.UntrackWindow(this);
+            if (_platform.AtSpiServer is { } atSpiServer
+                && _inputRoot?.FocusRoot is Control atSpiControl)
+            {
+                var atSpiPeer = atSpiControl.GetAutomationPeer()?.GetAutomationRoot()
+                    ?? atSpiControl.GetAutomationPeer();
+                if (atSpiPeer is not null)
+                    atSpiServer.RemoveWindow(atSpiPeer);
+            }
+
             // Before doing anything else notify the TopLevel that ITopLevelImpl is no longer valid
             if (_handle != IntPtr.Zero)
                 Closed?.Invoke();
@@ -1110,6 +1123,16 @@ namespace Avalonia.X11
         public void Show(bool activate, bool isDialog)
         {
             _mode.Show(activate, isDialog);
+
+            _platform.TrackWindow(this);
+            if (_platform.AtSpiServer is { } server
+                && _inputRoot?.FocusRoot is Control c)
+            {
+                var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(c);
+                var rootPeer = peer?.GetAutomationRoot() ?? peer;
+                if (rootPeer is not null)
+                    server.AddWindow(rootPeer);
+            }
         }
 
         public void Hide() => _mode.Hide();
@@ -1555,80 +1578,6 @@ namespace Avalonia.X11
             XChangeProperty(_x11.Display, _handle, _x11.Atoms._NET_WM_WINDOW_TYPE, _x11.Atoms.XA_ATOM,
                 32, PropertyMode.Replace, new[] { atom }, 1);
 
-        }
-
-        /// <inheritdoc/>
-        public void GetWindowsZOrder(Span<Window> windows, Span<long> outputZOrder)
-        {
-            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
-            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
-
-            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
-            for (var i = 0; i < windows.Length; i++)
-                if (windows[i].PlatformImpl is { Handle: { } handle })
-                    indexInWindowsSpan[handle.Handle] = i;
-
-            foreach (var window in windows)
-            {
-                if (window.PlatformImpl is not X11Window x11Window)
-                    continue;
-
-                var node = x11Window.Handle.Handle;
-                while (node != IntPtr.Zero)
-                {
-                    if (windowsChildren.ContainsKey(node))
-                    {
-                        break;
-                    }
-
-                    if (XQueryTree(_x11.Display, node, out _, out var parent,
-                            out var childrenPtr, out var childrenCount) == 0)
-                    {
-                        break;
-                    }
-
-                    if (childrenPtr != IntPtr.Zero)
-                    {
-                        var children = (IntPtr*)childrenPtr;
-                        windowsChildren[node] = new List<IntPtr>(childrenCount);
-                        for (var i = 0; i < childrenCount; i++)
-                        {
-                            windowsChildren[node].Add(children[i]);
-                        }
-                        XFree(childrenPtr);
-                    }
-
-                    node = parent;
-                }
-            }
-
-            var stack = new Stack<IntPtr>();
-            var zOrder = 0;
-            stack.Push(_x11.RootWindow);
-
-            while (stack.Count > 0)
-            {
-                var currentWindow = stack.Pop();
-
-                if (!windowsChildren.TryGetValue(currentWindow, out var children))
-                {
-                    continue;
-                }
-
-                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
-                {
-                    outputZOrder[index] = zOrder;
-                }
-
-                zOrder++;
-
-                // Children are returned bottom to top, so we need to push them in reverse order
-                // In order to traverse bottom children first
-                for (int i = children.Count - 1; i >= 0; i--)
-                {
-                    stack.Push(children[i]);
-                }
-            }
         }
 
         public void TakeFocus()

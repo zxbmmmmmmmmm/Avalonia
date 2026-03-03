@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls.Platform;
 using Avalonia.FreeDesktop;
+using Avalonia.FreeDesktop.AtSpi;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -27,6 +28,8 @@ namespace Avalonia.X11
     internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
+        private X11AtSpiAccessibility? _accessibility;
+        internal AtSpiServer? AtSpiServer => _accessibility?.Server;
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
         public Dictionary<IntPtr, X11EventDispatcher.EventHandler> Windows { get; } = new ();
         public XI2Manager? XI2 { get; private set; }
@@ -39,6 +42,7 @@ namespace Avalonia.X11
         public X11Globals Globals { get; private set; } = null!;
         public XResources Resources { get; private set; } = null!;
         public ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue { get; } = new();
+        public IX11PlatformDispatcher DispatcherImpl { get; private set; } = null!;
 
         public void Initialize(X11PlatformOptions options)
         {
@@ -76,10 +80,12 @@ namespace Avalonia.X11
             var clipboard = new Input.Platform.Clipboard(clipboardImpl);
 
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
-                .Bind<IWindowingPlatform>().ToConstant(this)
-                .Bind<IDispatcherImpl>().ToConstant<IDispatcherImpl>(options.UseGLibMainLoop
-                    ? new GlibDispatcherImpl(this)
-                    : new X11PlatformThreading(this))
+                .Bind<IWindowingPlatform>().ToConstant(this);
+            DispatcherImpl = options.UseGLibMainLoop
+                ? new GlibDispatcherImpl(this)
+                : new X11PlatformThreading(this);
+            Dispatcher.InitializeUIThreadDispatcher(DispatcherImpl);
+            AvaloniaLocator.CurrentMutable
                 .Bind<IRenderTimer>().ToConstant(timer)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control))
                 .Bind<KeyGestureFormatInfo>().ToConstant(new KeyGestureFormatInfo(new Dictionary<Key, string>() { }, meta: "Super"))
@@ -106,7 +112,13 @@ namespace Avalonia.X11
 
             Compositor = new Compositor(graphics);
             AvaloniaLocator.CurrentMutable.Bind<Compositor>().ToConstant(Compositor);
+            
+            _accessibility = new X11AtSpiAccessibility(this);
+            _accessibility.Initialize();
         }
+
+        internal void TrackWindow(X11Window window) => _accessibility?.TrackWindow(window);
+        internal void UntrackWindow(X11Window window) => _accessibility?.UntrackWindow(window);
 
         public IntPtr DeferredDisplay { get; set; }
         public IntPtr Display { get; set; }
@@ -229,6 +241,83 @@ namespace Avalonia.X11
             }
 
             throw new InvalidOperationException($"{nameof(X11PlatformOptions)}.{nameof(X11PlatformOptions.RenderingMode)} has a value of \"{string.Join(", ", opts.RenderingMode)}\", but no options were applied.");
+        }
+
+        public void GetWindowsZOrder(ReadOnlySpan<IWindowImpl> windows, Span<long> outputZOrder)
+        {
+            // a mapping of parent windows to their children, sorted by z-order (bottom to top)
+            var windowsChildren = new Dictionary<IntPtr, List<IntPtr>>();
+
+            var indexInWindowsSpan = new Dictionary<IntPtr, int>();
+            for (var i = 0; i < windows.Length; i++)
+                if (windows[i] is X11Window { Handle: { } handle })
+                    indexInWindowsSpan[handle.Handle] = i;
+
+            foreach (var window in windows)
+            {
+                if (window is not X11Window x11Window)
+                    continue;
+
+                var node = x11Window.Handle.Handle;
+                while (node != IntPtr.Zero)
+                {
+                    if (windowsChildren.ContainsKey(node))
+                    {
+                        break;
+                    }
+
+                    if (XQueryTree(Info.Display, node, out _, out var parent,
+                            out var childrenPtr, out var childrenCount) == 0)
+                    {
+                        break;
+                    }
+
+                    if (childrenPtr != IntPtr.Zero)
+                    {
+                        unsafe
+                        {
+                            var children = (IntPtr*)childrenPtr;
+                            windowsChildren[node] = new List<IntPtr>(childrenCount);
+                            for (var i = 0; i < childrenCount; i++)
+                            {
+                                windowsChildren[node].Add(children[i]);
+                            }
+
+                            XFree(childrenPtr);
+                        }
+                    }
+
+                    node = parent;
+                }
+            }
+
+            var stack = new Stack<IntPtr>();
+            var zOrder = 0;
+            stack.Push(Info.RootWindow);
+
+            while (stack.Count > 0)
+            {
+                var currentWindow = stack.Pop();
+
+                if (!windowsChildren.TryGetValue(currentWindow, out var children))
+                {
+                    continue;
+                }
+
+                if (indexInWindowsSpan.TryGetValue(currentWindow, out var index))
+                {
+                    outputZOrder[index] = zOrder;
+                }
+
+                zOrder++;
+
+                // Children are returned bottom to top, so we need to push them in reverse order
+                // In order to traverse bottom children first
+                for (int i = children.Count - 1; i >= 0; i--)
+                {
+                    stack.Push(children[i]);
+                }
+            }
         }
     }
 }
