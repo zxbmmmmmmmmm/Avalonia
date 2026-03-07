@@ -416,6 +416,18 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         _interactionTracker.MaxScale = MaxZoomFactor;
         _interactionSource = new InputElementInteractionSource(this, _interactionTracker);
         UpdateScrollAnimation();
+
+        if(Child is not null)
+        {
+            // 生成器生成出的 CompositionVisual 只在 Client 端设置了默认值，但 Server 端没有
+            // 这会导致 Scale 被初始化为 0，导致内容不可见，需要滚动一次后触发 ExpressionAnimation 更新才能看到内容
+            // 强制初始化 Scale 以确保元素可见
+            // 这似乎只在有动画时会出现这种问题，具体原因有待探究。。
+            var childVisual = ElementComposition.GetElementVisual(Child);
+            childVisual?.Server.Scale = new Vector3D(1, 1, 1);
+        }
+
+
         UpdateInteractionOptions();
     }
 
