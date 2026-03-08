@@ -1239,13 +1239,17 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
 
         if (_animationGroup == null)
         {
-            var compositionVisual = ElementComposition.GetElementVisual(this);
+            var compositionVisual = ElementComposition.GetElementVisual(Child);
 
             var scrollAnimation = compositionVisual!.Compositor.CreateExpressionAnimation();
+
+            // 甚至没法直接使用 Tracker.Position ，一定要重新创建一个Vector3..解释器罪大恶极
+            // this.Target 的问题需要等待修复
             scrollAnimation.Expression =
-                "Vector3(Margin.X, Margin.Y, 0) - (Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z))";
-            scrollAnimation.Target = "Offset";
+                "Vector3(Margin.X, Margin.Y, 0) - Vector3(Tracker.Position.X, Tracker.Position.Y, Tracker.Position.Z) + Vector3(this.Target.Offset.X, this.Target.Offset.Y, this.Target.Offset.Z)";
+            scrollAnimation.Target = "Translation";
             scrollAnimation.SetReferenceParameter("Tracker", _interactionTracker);
+            scrollAnimation.SetReferenceParameter("vis", compositionVisual);
 
             var margin = Child!.Margin + Padding;
             scrollAnimation.SetVector2Parameter("Margin", new Vector2((float)margin.Left, (float)margin.Top));
