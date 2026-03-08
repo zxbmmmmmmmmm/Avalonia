@@ -76,8 +76,30 @@ internal class CompositionProperty
     
     public static IReadOnlyDictionary<string, CompositionProperty>? TryGetPropertiesForType(Type t)
     {
-        GetRegistry().TryGetValue(t, out var rv);
-        return rv;
+        var type = t;
+        Dictionary<string, CompositionProperty>? result = null;
+        var registry = GetRegistry();
+        while (type is not null)
+        {
+            registry.TryGetValue(type, out var rv);
+            if(rv is not null)
+            {
+                if (result is null)
+                {
+                    result = new Dictionary<string, CompositionProperty>(rv);
+                }
+                else
+                {
+                    foreach(var item in rv)
+                    {
+                        result.TryAdd(item.Key,item.Value);
+                    }
+                }
+            }
+
+            type = type.BaseType;
+        }
+        return result;
     }
 
     public static CompositionProperty? Find(Type owner, string name)
