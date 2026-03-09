@@ -31,8 +31,8 @@ namespace Avalonia.Rendering.Composition.Animations
         public override void Initialize(TimeSpan startedAt, T startingValue, CompositionProperty<T> property)
         {
             _startingValue = startingValue;
-            var hs = new HashSet<(string, string)>();
-            base.Initialize(property, _trackedObjects);
+            var references = _compositionExpresssion.References;
+            base.Initialize(property, references);
         }
 
         public ExpressionAnimationInstance(CompositionExpression<T> expression,

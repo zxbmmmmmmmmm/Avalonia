@@ -20,9 +20,74 @@ namespace Avalonia.Rendering.Composition.Expressions
 
         public CompositionExpression(Expression<Func<ExpressionEvaluationContext<T>, T>> expression)
         {
-            _func = expression.Compile();// TODO: Expr visitor
-            References = new();
+            var visitor = new CompositionExpressionVisitor();
+            var newExpression = (Expression<Func<ExpressionEvaluationContext<T>, T>>)visitor.Visit(expression)!;
+            References = visitor.CollectedInfo;
+            _func = newExpression.Compile();
         }
     }
 
+    internal class CompositionExpressionVisitor : ExpressionVisitor
+    {
+        private static readonly PropertyInfo s_serverProperty =
+            typeof(CompositionObject).GetProperty(nameof(CompositionObject.Server), BindingFlags.NonPublic | BindingFlags.Instance)!;
+
+        private static readonly PropertyInfo s_getVariantProperty =
+            typeof(CompositionProperty).GetProperty(nameof(CompositionProperty.GetVariant))!;
+
+        private static readonly MethodInfo s_castVariantMethod =
+            typeof(CompositionExpressionVisitor).GetMethod(nameof(CastVariant), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        internal HashSet<(ServerObject Instance, CompositionProperty Property)> CollectedInfo { get; } = new();
+
+        protected override Expression VisitMember(MemberExpression node)
+        {
+            if (node.Expression is not null &&
+                typeof(CompositionObject).IsAssignableFrom(node.Expression.Type))
+            {
+                var instance = GetValue(node.Expression) as CompositionObject;
+                if (instance is not null)
+                {
+                    var server = instance.Server as ServerObject;
+                    var compProperty = server?.GetCompositionProperty(node.Member.Name);
+
+                    if (compProperty is not null && compProperty.GetVariant is not null)
+                    {
+                        CollectedInfo.Add((server, compProperty));
+
+                        var visitedExpression = Visit(node.Expression);
+                        var serverAccess = Expression.MakeMemberAccess(visitedExpression, s_serverProperty);
+                        var getVariantAccess = Expression.MakeMemberAccess(Expression.Constant(compProperty), s_getVariantProperty);
+                        var variantAccess = Expression.Invoke(
+                            getVariantAccess,
+                            Expression.Convert(serverAccess, typeof(SimpleServerObject)));
+
+                        return Expression.Call(
+                            s_castVariantMethod.MakeGenericMethod(node.Type),
+                            variantAccess);
+                    }
+                }
+            }
+
+            return base.VisitMember(node);
+        }
+
+        private static T CastVariant<T>(ExpressionVariant variant) where T : struct =>
+            variant.TryCast<T>(out var value) ? value : default;
+
+        private object? GetValue(Expression exp)
+        {
+            if (exp is ConstantExpression ce)
+                return ce.Value;
+            if (exp is MemberExpression me)
+            {
+                var target = GetValue(me.Expression!);
+                if (me.Member is FieldInfo fi)
+                    return fi.GetValue(target);
+                if (me.Member is PropertyInfo pi)
+                    return pi.GetValue(target);
+            }
+            return null;
+        }
+    }
 }

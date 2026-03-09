@@ -25,11 +25,7 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
     {
         if (trackedObjects.Count > 0)
         {
-            _trackedObjects = new();
-            foreach (var t in trackedObjects)
-            {
-                trackedObjects.Add(t);
-            }
+            _trackedObjects = [.. trackedObjects];
         }
 
         Property = property;

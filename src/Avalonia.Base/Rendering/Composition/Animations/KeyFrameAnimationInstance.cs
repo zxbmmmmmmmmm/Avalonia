@@ -56,9 +56,16 @@ namespace Avalonia.Rendering.Composition.Animations
 
         protected override T EvaluateCore(TimeSpan now, T currentValue)
         {
+
             var starting = _startingValue;
+            var ctx = new ExpressionEvaluationContext<T>
+            {
+                CurrentValue = currentValue,
+                FinalValue = _finalValue ?? _startingValue,
+                StartingValue = starting,
+            };
             var elapsed = now - _startedAt;
-            var res = EvaluateImpl(elapsed, currentValue);
+            var res = EvaluateImpl(elapsed, currentValue, ref ctx);
 
             if (_iterationBehavior == AnimationIterationBehavior.Count
                 && !_finished
@@ -71,14 +78,9 @@ namespace Avalonia.Rendering.Composition.Animations
             return res;
         }
 
-        private T EvaluateImpl(TimeSpan elapsed, T currentValue)
+        private T EvaluateImpl(TimeSpan elapsed, T currentValue, ref ExpressionEvaluationContext<T> ctx)
         {
-            var ctx = new ExpressionEvaluationContext<T>
-            {
-                CurrentValue = currentValue,
-                FinalValue = _finalValue ?? _startingValue,
-                StartingValue = _startingValue,
-            };
+
             if (elapsed < _delayTime)
             {
                 if (_delayBehavior == AnimationDelayBehavior.SetInitialValueBeforeDelay)
