@@ -23,7 +23,7 @@ class ServerObjectAnimations
 
     private class ServerObjectSubscriptionStore
     {
-        public bool IsValid;
+        public bool IsValid = true;
         public RefTrackingDictionary<IAnimationInstance>? Subscribers;
 
         public void Invalidate()
@@ -136,6 +136,12 @@ class ServerObjectAnimations
         if (store.Subscribers == null)
             store.Subscribers = new();
         store.Subscribers.AddRef(animation);
+    }
+
+    public void ValidSubscription(CompositionProperty prop)
+    {
+        if (_subscriptions.TryGetValue(prop, out var subs))
+            subs.IsValid = true;
     }
 
     public void UnsubscribeFromInvalidation(CompositionProperty member, IAnimationInstance animation)

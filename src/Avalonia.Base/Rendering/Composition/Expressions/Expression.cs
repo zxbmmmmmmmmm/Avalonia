@@ -32,11 +32,17 @@ namespace Avalonia.Rendering.Composition.Expressions
         private static readonly PropertyInfo s_serverProperty =
             typeof(CompositionObject).GetProperty(nameof(CompositionObject.Server), BindingFlags.NonPublic | BindingFlags.Instance)!;
 
+        private static readonly PropertyInfo s_animationsProperty =
+            typeof(ServerObject).GetProperty(nameof(ServerObject.Animations), BindingFlags.Public | BindingFlags.Instance)!;
+
         private static readonly PropertyInfo s_getVariantProperty =
             typeof(CompositionProperty).GetProperty(nameof(CompositionProperty.GetVariant))!;
 
         private static readonly MethodInfo s_castVariantMethod =
             typeof(CompositionExpressionVisitor).GetMethod(nameof(CastVariant), BindingFlags.NonPublic | BindingFlags.Static)!;
+
+        private static readonly MethodInfo s_ValidSubscriptionMethod =
+            typeof(ServerObjectAnimations).GetMethod(nameof(ServerObjectAnimations.ValidSubscription), BindingFlags.Public | BindingFlags.Instance)!;
 
         internal HashSet<(ServerObject Instance, CompositionProperty Property)> CollectedInfo { get; } = new();
 
@@ -57,14 +63,33 @@ namespace Avalonia.Rendering.Composition.Expressions
 
                         var visitedExpression = Visit(node.Expression);
                         var serverAccess = Expression.MakeMemberAccess(visitedExpression, s_serverProperty);
+                        var serverObjectAccess = Expression.Convert(serverAccess, typeof(ServerObject));
+                        var animationsAccess = Expression.MakeMemberAccess(serverObjectAccess, s_animationsProperty);
+                        var animationsVariable = Expression.Variable(typeof(ServerObjectAnimations), "animations");
+
+                        var assignAnimations = Expression.Assign(animationsVariable, animationsAccess);
+
+                        var validSubscriptionCall = Expression.IfThen(
+                            Expression.ReferenceNotEqual(
+                                animationsVariable,
+                                Expression.Constant(null, typeof(ServerObjectAnimations))),
+                            Expression.Call(
+                                animationsVariable,
+                                s_ValidSubscriptionMethod,
+                                Expression.Constant(compProperty, typeof(CompositionProperty))));
+
                         var getVariantAccess = Expression.MakeMemberAccess(Expression.Constant(compProperty), s_getVariantProperty);
                         var variantAccess = Expression.Invoke(
                             getVariantAccess,
                             Expression.Convert(serverAccess, typeof(SimpleServerObject)));
 
-                        return Expression.Call(
-                            s_castVariantMethod.MakeGenericMethod(node.Type),
-                            variantAccess);
+                        return Expression.Block(
+                            [animationsVariable],
+                            assignAnimations,
+                            validSubscriptionCall,
+                            Expression.Call(
+                                s_castVariantMethod.MakeGenericMethod(node.Type),
+                                variantAccess));
                     }
                 }
             }
