@@ -35,12 +35,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         private static readonly PropertyInfo s_animationsProperty =
             typeof(ServerObject).GetProperty(nameof(ServerObject.Animations), BindingFlags.Public | BindingFlags.Instance)!;
 
-        private static readonly PropertyInfo s_getVariantProperty =
-            typeof(CompositionProperty).GetProperty(nameof(CompositionProperty.GetVariant))!;
-
-        private static readonly MethodInfo s_castVariantMethod =
-            typeof(CompositionExpressionVisitor).GetMethod(nameof(CastVariant), BindingFlags.NonPublic | BindingFlags.Static)!;
-
         private static readonly MethodInfo s_ValidSubscriptionMethod =
             typeof(ServerObjectAnimations).GetMethod(nameof(ServerObjectAnimations.ValidSubscription), BindingFlags.Public | BindingFlags.Instance)!;
 
@@ -78,7 +72,13 @@ namespace Avalonia.Rendering.Composition.Expressions
                                 s_ValidSubscriptionMethod,
                                 Expression.Constant(compProperty, typeof(CompositionProperty))));
 
-                        var getVariantAccess = Expression.MakeMemberAccess(Expression.Constant(compProperty), s_getVariantProperty);
+                        var typedPropertyType = typeof(CompositionProperty<>).MakeGenericType(node.Type);
+                        var typedGetVariantProperty = typedPropertyType.GetProperty(
+                            nameof(CompositionProperty<int>.GetVariant),
+                            BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)!;
+
+                        var typedPropertyAccess = Expression.Constant(compProperty, typedPropertyType);
+                        var getVariantAccess = Expression.MakeMemberAccess(typedPropertyAccess, typedGetVariantProperty);
                         var variantAccess = Expression.Invoke(
                             getVariantAccess,
                             Expression.Convert(serverAccess, typeof(SimpleServerObject)));
@@ -87,18 +87,13 @@ namespace Avalonia.Rendering.Composition.Expressions
                             [animationsVariable],
                             assignAnimations,
                             validSubscriptionCall,
-                            Expression.Call(
-                                s_castVariantMethod.MakeGenericMethod(node.Type),
-                                variantAccess));
+                            variantAccess);
                     }
                 }
             }
 
             return base.VisitMember(node);
         }
-
-        private static T CastVariant<T>(ExpressionVariant variant) where T : struct =>
-            variant.TryCast<T>(out var value) ? value : default;
 
         private object? GetValue(Expression exp)
         {

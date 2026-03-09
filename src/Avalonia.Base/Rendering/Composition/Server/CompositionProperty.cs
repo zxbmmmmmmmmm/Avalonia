@@ -20,7 +20,7 @@ internal class CompositionProperty
 
     private static volatile ReadOnlyRegistry? s_ReadOnlyRegistry;
 
-    public CompositionProperty(int id, string name, Type owner, Func<SimpleServerObject, ExpressionVariant>? getVariant)
+    public CompositionProperty(int id, string name, Type owner, Func<SimpleServerObject, object>? getVariant)
     {
         Id = id;
         Name = name;
@@ -31,10 +31,10 @@ internal class CompositionProperty
     public int Id { get; }
     public string Name { get;  }
     public Type Owner { get; }
-    public Func<SimpleServerObject, ExpressionVariant>? GetVariant { get; }
+    public Func<SimpleServerObject, object>? GetVariant { get; }
 
     public static CompositionProperty<TField> Register<TOwner, TField>(string name, Func<SimpleServerObject, TField> getField, Action<SimpleServerObject, TField> setField, 
-        Func<SimpleServerObject, ExpressionVariant>? getVariant)
+        Func<SimpleServerObject, TField>? getVariant)
     {
         CompositionProperty<TField> prop;
         lock (_lock)
@@ -98,18 +98,21 @@ internal class CompositionProperty
     }
 }
 
-internal class CompositionProperty<T> : CompositionProperty
+internal class CompositionProperty<T>  : CompositionProperty
 {
     public Func<SimpleServerObject, T> GetField { get; }
     public Action<SimpleServerObject, T> SetField { get; }
+    public new Func<SimpleServerObject, T>? GetVariant { get; }
+
 
     public CompositionProperty(int id, string name, Type owner,
         Func<SimpleServerObject, T> getField,
         Action<SimpleServerObject, T> setField,
-        Func<SimpleServerObject, ExpressionVariant>? getVariant)
-        : base(id, name, owner, getVariant)
+        Func<SimpleServerObject, T>? getVariant)
+        : base(id, name, owner, obj => getVariant(obj))
     {
         GetField = getField;
         SetField = setField;
+        GetVariant = getVariant;
     }
 }
