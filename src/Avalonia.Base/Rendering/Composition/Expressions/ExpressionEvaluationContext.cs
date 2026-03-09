@@ -12,7 +12,7 @@ namespace Avalonia.Rendering.Composition.Expressions
 
     internal interface IExpressionObject
     {
-        T GetProperty<T>(string name);
+        T GetProperty<T>(string name) where T : struct;
     }
 
 }

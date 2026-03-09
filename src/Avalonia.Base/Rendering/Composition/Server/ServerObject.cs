@@ -13,7 +13,7 @@ namespace Avalonia.Rendering.Composition.Server
     /// Server-side <see cref="CompositionObject" /> counterpart.
     /// Is responsible for animation activation and invalidation
     /// </summary>
-    internal abstract class ServerObject : SimpleServerObject
+    internal abstract class ServerObject : SimpleServerObject , IExpressionObject
     {
         private uint _activationCount;
         private ServerObjectAnimations? _animations;
@@ -68,6 +68,14 @@ namespace Avalonia.Rendering.Composition.Server
         public virtual void NotifyAnimatedValueChanged(CompositionProperty property) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
+
+        T IExpressionObject.GetProperty<T>(string name) where T : struct
+        {
+            if (_animations == null)
+                return (T)(CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default);
+
+            return _animations.GetPropertyForAnimation<T>(name);
+        }
 
     }
 }

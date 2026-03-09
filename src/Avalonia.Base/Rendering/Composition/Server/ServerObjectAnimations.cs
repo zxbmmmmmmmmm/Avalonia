@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Utilities;
@@ -166,5 +167,19 @@ class ServerObjectAnimations
         }
         else
             Debug.Assert(false);
+    }
+
+    public T GetPropertyForAnimation<T>(string name) where T: struct
+    {
+        if (!_properties.TryGetValue(name, out var prop))
+            return default;
+
+        if (_subscriptions.TryGetValue(prop, out var subs))
+            subs.IsValid = true;
+
+        if (_animations.TryGetValue(prop, out var animation))
+            return Unsafe.As<ServerObjectAnimationInstance<T>>(animation).GetVariant();
+
+        return (T)(prop.GetVariant?.Invoke(_owner) ?? default);
     }
 }

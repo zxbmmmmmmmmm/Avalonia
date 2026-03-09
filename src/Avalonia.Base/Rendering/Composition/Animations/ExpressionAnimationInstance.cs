@@ -23,7 +23,8 @@ namespace Avalonia.Rendering.Composition.Animations
             {
                 StartingValue = _startingValue,
                 FinalValue = _finalValue ?? _startingValue,
-                CurrentValue = currentValue
+                CurrentValue = currentValue,
+                Target = TargetObject
             };
             return _compositionExpresssion.Evaluate(ref ctx);
         }

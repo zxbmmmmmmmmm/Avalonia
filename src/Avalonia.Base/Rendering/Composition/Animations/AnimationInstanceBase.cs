@@ -32,7 +32,6 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
     }
 
 
-
     public virtual void Activate()
     {
         if (_trackedObjects != null)

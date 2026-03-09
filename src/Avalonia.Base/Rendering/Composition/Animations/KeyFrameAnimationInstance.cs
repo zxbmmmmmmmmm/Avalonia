@@ -63,6 +63,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 CurrentValue = currentValue,
                 FinalValue = _finalValue ?? _startingValue,
                 StartingValue = starting,
+                Target = TargetObject
             };
             var elapsed = now - _startedAt;
             var res = EvaluateImpl(elapsed, currentValue, ref ctx);
