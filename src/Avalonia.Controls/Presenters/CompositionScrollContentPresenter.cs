@@ -1237,7 +1237,7 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
             return;
         }
 
-        if (_animationGroup == null)
+        if (_animationGroup == null && Child is not null)
         {
             var compositionVisual = ElementComposition.GetElementVisual(Child);
 
