@@ -40,7 +40,7 @@ public partial class CompositionPage : UserControl
         var border1Visual = ElementComposition.GetElementVisual(border1);
         var border2Visual = ElementComposition.GetElementVisual(border2);
         var border3Visual = ElementComposition.GetElementVisual(border3);
-        var compositor = border1Visual.Compositor;
+        var compositor = border1Visual!.Compositor;
         var tracker = compositor.CreateInteractionTracker();
 
         tracker.MinPosition = new Vector3D(0,0,0);
@@ -59,8 +59,8 @@ public partial class CompositionPage : UserControl
         var animation2 = compositor.CreateExpressionAnimation("Vector3(tracker.Position.Y, tracker.Position.X, tracker.Position.Z)");// TODO: Z->Scalar?
         animation.SetReferenceParameter("tracker", tracker);
         animation2.SetReferenceParameter("tracker", tracker);
-        border2Visual.StartAnimation("Offset", animation);
-        border3Visual.StartAnimation("Offset", animation2);
+        border2Visual!.StartAnimation("Offset", animation);
+        border3Visual!.StartAnimation("Offset", animation2);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
