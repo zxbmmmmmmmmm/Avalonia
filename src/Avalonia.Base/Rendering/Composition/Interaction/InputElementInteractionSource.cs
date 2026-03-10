@@ -9,22 +9,22 @@ namespace Avalonia.Rendering.Composition;
 public class InputElementInteractionSource : IDisposable
 {
     /// <summary>
-    /// Defines how interactions are processed for an <see cref="VisualInteractionSource"/> on the scale axis.
-    /// This property must be enabled to allow the <see cref="VisualInteractionSource"/> to send scale data to <see cref="InteractionTracker"/>.
+    /// Defines how interactions are processed for an <see cref="InputElementInteractionSource"/> on the scale axis.
+    /// This property must be enabled to allow the <see cref="InputElementInteractionSource"/> to send scale data to <see cref="InteractionTracker"/>.
     /// </summary>
     public InteractionSourceMode ScaleSourceMode { get; set; } = InteractionSourceMode.Disabled;
 
     /// <summary>
     /// Source mode for the X-axis.
-    /// The <see cref="PositionXSourceMode"/> property defines how interactions are processed for a <see cref="VisualInteractionSource"/> on the X-axis.
-    /// This property must be enabled to allow the <see cref="VisualInteractionSource"/> to send X-axis data to <see cref="InteractionTracker"/>.
+    /// The <see cref="PositionXSourceMode"/> property defines how interactions are processed for a <see cref="InputElementInteractionSource"/> on the X-axis.
+    /// This property must be enabled to allow the <see cref="InputElementInteractionSource"/> to send X-axis data to <see cref="InteractionTracker"/>.
     /// </summary>
     public InteractionSourceMode PositionXSourceMode { get; set; } = InteractionSourceMode.EnabledWithInertia;
 
     /// <summary>
     /// Source mode for the Y-axis.
-    /// The <see cref="PositionYSourceMode"/> property defines how interactions are processed for a <see cref="VisualInteractionSource"/> on the Y-axis.
-    /// This property must be enabled to allow the <see cref="VisualInteractionSource"/> to send Y-axis data to <see cref="InteractionTracker"/>.
+    /// The <see cref="PositionYSourceMode"/> property defines how interactions are processed for a <see cref="InputElementInteractionSource"/> on the Y-axis.
+    /// This property must be enabled to allow the <see cref="InputElementInteractionSource"/> to send Y-axis data to <see cref="InteractionTracker"/>.
     /// </summary>
     public InteractionSourceMode PositionYSourceMode { get; set; } = InteractionSourceMode.EnabledWithInertia;
 
