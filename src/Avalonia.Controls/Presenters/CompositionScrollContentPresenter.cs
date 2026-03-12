@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 using System.Xml.Linq;
@@ -1230,6 +1231,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         vis.StartAnimationGroup(_animationGroup);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(InteractionTracker))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(CompositionVisual))]
     private void EnsureScrollAnimation()
     {
         if (_interactionTracker == null)

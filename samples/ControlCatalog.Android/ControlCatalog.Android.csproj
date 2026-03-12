@@ -7,6 +7,12 @@
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <UseMonoRuntime>false</UseMonoRuntime>
+    <PublishAot>true</PublishAot>
+    <NoWarn>$(NoWarn);IL3053;IL3002</NoWarn>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>  
+    
   </PropertyGroup>
   <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
@@ -25,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" /> 
   </ItemGroup>
 
   <ItemGroup>
