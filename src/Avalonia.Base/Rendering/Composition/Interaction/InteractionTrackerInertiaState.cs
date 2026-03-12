@@ -12,6 +12,8 @@ internal sealed class InteractionTrackerInertiaState : InteractionTrackerState
     private readonly IInteractionTrackerInertiaHandler _handler;
     private readonly int _requestId;
 
+    internal override string Name => "InertiaState";
+
     public InteractionTrackerInertiaState(
         InteractionTracker interactionTracker,
         Vector3D translationVelocities,
