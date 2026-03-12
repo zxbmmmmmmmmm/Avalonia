@@ -9,6 +9,8 @@ internal abstract class InteractionTrackerState
     private protected InteractionTracker _interactionTracker;
     private protected bool _disposed;
 
+    internal abstract string Name { get; }
+
     protected InteractionTrackerState(InteractionTracker interactionTracker)
     {
         _interactionTracker = interactionTracker;

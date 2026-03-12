@@ -81,8 +81,14 @@ public partial class InteractionTracker : CompositionObject
     internal void ChangeState(InteractionTrackerState newState)
     {
         Interlocked.Increment(ref _count);
-        Debug.WriteLine($"{_count}:{_state.GetType().Name.Replace("InteractionTracker", "")} -> {newState.GetType().Name.Replace("InteractionTracker", "")}");
+        WriteStateTransition(_count, _state.Name, newState.Name);
         _state = newState;
+    }
+
+    [Conditional("DEBUG")]
+    private static void WriteStateTransition(int count, string previousState, string newState)
+    {
+        Debug.WriteLine($"{count}:{previousState} -> {newState}");
     }
 
     internal void StartUserManipulation(Point position, IPointer pointer)

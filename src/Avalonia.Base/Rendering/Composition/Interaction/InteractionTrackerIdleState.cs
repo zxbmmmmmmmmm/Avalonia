@@ -9,6 +9,8 @@ internal sealed class InteractionTrackerIdleState : InteractionTrackerState
     private readonly bool _isInitialIdleState;
     private readonly int _requestId;
 
+    internal override string Name => "IdleState";
+
     public InteractionTrackerIdleState(InteractionTracker interactionTracker, int requestId, bool isInitialIdleState = false) : base(interactionTracker)
     {
         _requestId = requestId;

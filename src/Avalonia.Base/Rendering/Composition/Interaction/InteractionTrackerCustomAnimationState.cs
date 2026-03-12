@@ -7,6 +7,8 @@ using Avalonia.Input;
 namespace Avalonia.Rendering.Composition;
 internal sealed class InteractionTrackerCustomAnimationState : InteractionTrackerState
 {
+    internal override string Name => "CustomAnimationState";
+
     public InteractionTrackerCustomAnimationState(InteractionTracker interactionTracker) : base(interactionTracker)
     {
         EnterState(interactionTracker.Owner);

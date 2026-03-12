@@ -11,6 +11,8 @@ internal sealed class InteractionTrackerInteractingState : InteractionTrackerSta
     private const double ReferenceRange = 2000;
     private const double Tension = 0.5;
 
+    internal override string Name => "InteractingState";
+
     private double _previousScale;
     private Point _previousOrigin;
     private Vector3D _position;
