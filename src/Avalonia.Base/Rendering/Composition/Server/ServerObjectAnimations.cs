@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Utilities;
@@ -14,6 +15,8 @@ class ServerObjectAnimations
     private InlineDictionary<CompositionProperty, ServerObjectAnimationInstance> _animations;
     private readonly IReadOnlyDictionary<string, CompositionProperty> _properties;
 
+    [UnconditionalSuppressMessage("Trimming", "IL2072",
+        Justification = "Composition types are preserved through CompositionProperty.Register static field initializers")]
     public ServerObjectAnimations(ServerObject owner)
     {
         _owner = owner;

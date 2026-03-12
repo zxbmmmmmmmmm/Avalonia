@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
-using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Expressions
 {
@@ -28,15 +25,25 @@ namespace Avalonia.Rendering.Composition.Expressions
         protected abstract string Print();
         public override string ToString() => Print();
 
-        [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.DesignTimeSupressWarningMessage)]
-        internal static string OperatorName(ExpressionType t)
+        internal static string OperatorName(ExpressionType t) => t switch
         {
-            var attr = typeof(ExpressionType).GetMember(t.ToString())[0]
-                .GetCustomAttribute<PrettyPrintStringAttribute>();
-            if (attr != null)
-                return attr.Name;
-            return t.ToString();
-        }
+            ExpressionType.Add => "+",
+            ExpressionType.Subtract => "-",
+            ExpressionType.Divide => "/",
+            ExpressionType.Multiply => "*",
+            ExpressionType.MoreThan => ">",
+            ExpressionType.LessThan => "<",
+            ExpressionType.MoreThanOrEqual => ">=",
+            ExpressionType.LessThanOrEqual => "<=",
+            ExpressionType.LogicalAnd => "&&",
+            ExpressionType.LogicalOr => "||",
+            ExpressionType.Remainder => "%",
+            ExpressionType.Equals => "==",
+            ExpressionType.NotEquals => "!=",
+            ExpressionType.Not => "!",
+            ExpressionType.UnaryMinus => "-",
+            _ => t.ToString(),
+        };
     }
 
     [AttributeUsage(AttributeTargets.Field)]

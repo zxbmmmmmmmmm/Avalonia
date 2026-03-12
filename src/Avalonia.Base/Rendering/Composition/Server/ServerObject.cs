@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Rendering.Composition.Animations;
@@ -69,6 +70,9 @@ namespace Avalonia.Rendering.Composition.Server
         public virtual void NotifyAnimatedValueChanged(CompositionProperty property) => ValuesInvalidated();
         
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
+
+        [UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "Composition types are preserved through CompositionProperty.Register static field initializers")]
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
             if (_animations == null)

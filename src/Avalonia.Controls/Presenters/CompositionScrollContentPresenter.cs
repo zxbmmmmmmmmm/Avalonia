@@ -1231,8 +1231,8 @@ public sealed class CompositionScrollContentPresenter : ContentPresenter, IScrol
         vis.StartAnimationGroup(_animationGroup);
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(InteractionTracker))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(CompositionVisual))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(InteractionTracker))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(CompositionVisual))]
     private void EnsureScrollAnimation()
     {
         if (_interactionTracker == null)

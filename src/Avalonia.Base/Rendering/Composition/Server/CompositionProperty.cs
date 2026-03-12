@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Avalonia.Rendering.Composition.Expressions;
@@ -33,7 +34,7 @@ internal class CompositionProperty
     public Type Owner { get; }
     public Func<SimpleServerObject, ExpressionVariant>? GetVariant { get; }
 
-    public static CompositionProperty<TField> Register<TOwner, TField>(string name, Func<SimpleServerObject, TField> getField, Action<SimpleServerObject, TField> setField, 
+    public static CompositionProperty<TField> Register<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TOwner, TField>(string name, Func<SimpleServerObject, TField> getField, Action<SimpleServerObject, TField> setField, 
         Func<SimpleServerObject, ExpressionVariant>? getVariant)
     {
         CompositionProperty<TField> prop;
@@ -74,7 +75,8 @@ internal class CompositionProperty
         return reg;
     }
     
-    public static IReadOnlyDictionary<string, CompositionProperty>? TryGetPropertiesForType(Type t)
+    public static IReadOnlyDictionary<string, CompositionProperty>? TryGetPropertiesForType(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t)
     {
         var type = t;
         Dictionary<string, CompositionProperty>? result = null;
@@ -102,7 +104,8 @@ internal class CompositionProperty
         return result;
     }
 
-    public static CompositionProperty? Find(Type owner, string name)
+    public static CompositionProperty? Find(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type owner, string name)
     {
         if (TryGetPropertiesForType(owner)?.TryGetValue(name, out var prop) == true)
             return prop;

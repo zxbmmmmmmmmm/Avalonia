@@ -428,6 +428,7 @@ return;
             "float",
             "double",
             "Vector2",
+            "Vector",
             "Vector3",
             "Vector4",
             "Matrix",

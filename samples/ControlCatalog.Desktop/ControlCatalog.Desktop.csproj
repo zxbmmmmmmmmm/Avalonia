@@ -5,6 +5,11 @@
     <TargetFramework>$(AvsCurrentTargetFramework)</TargetFramework>
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishAot>true</PublishAot>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <SuppressAotAnalysisWarnings>true</SuppressAotAnalysisWarnings>
+
+    <NoWarn>$(NoWarn);IL2026;IL3002;IL3053;IL2104;MSB3073</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
