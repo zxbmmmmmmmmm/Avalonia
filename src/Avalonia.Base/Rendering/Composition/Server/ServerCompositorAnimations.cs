@@ -34,6 +34,8 @@ internal class ServerCompositorAnimations
         }
     }
 
+    public bool NeedNextTick => _clockItems.Count > 0;
+
     public void AddDirtyAnimatedObject(ServerObjectAnimations obj)
     {
         lock (_dirtyAnimatedObjectsLock)

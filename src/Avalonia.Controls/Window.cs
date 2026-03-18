@@ -248,7 +248,7 @@ namespace Avalonia.Controls
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, WindowResizeReason.Application));
 
             CreatePlatformImplBinding(TitleProperty, title => PlatformImpl!.SetTitle(title));
-            CreatePlatformImplBinding(IconProperty, icon => PlatformImpl!.SetIcon((icon ?? s_defaultIcon.Value)?.PlatformImpl));
+            CreatePlatformImplBinding(IconProperty, SetEffectiveIcon);
             CreatePlatformImplBinding(CanResizeProperty, canResize => PlatformImpl!.CanResize(canResize));
             CreatePlatformImplBinding(CanMinimizeProperty, canMinimize => PlatformImpl!.SetCanMinimize(canMinimize));
             CreatePlatformImplBinding(CanMaximizeProperty, canMaximize => PlatformImpl!.SetCanMaximize(canMaximize));
@@ -626,10 +626,7 @@ namespace Avalonia.Controls
                 StartRendering();
             }
 
-            // Update fullscreen popover visibility
-            TopLevelHost.SetFullscreenPopoverEnabled(state == WindowState.FullScreen);
-
-            // Update decoration parts for the new window state
+            // Update decoration parts and fullscreen popover state for the new window state
             UpdateDrawnDecorationParts();
         }
 
@@ -643,13 +640,11 @@ namespace Avalonia.Controls
         
         private void UpdateDrawnDecorations()
         {
-            var needsDrawnDecorations = PlatformImpl?.NeedsManagedDecorations ?? false;
+            var parts = ComputeDecorationParts();
+            TopLevelHost.UpdateDrawnDecorations(parts, WindowState);
 
-            var parts = needsDrawnDecorations ? ComputeDecorationParts() : DrawnWindowDecorationParts.None;
-            if (parts != DrawnWindowDecorationParts.None)
+            if (parts != null)
             {
-                TopLevelHost.EnableDecorations(parts);
-
                 // Forward ExtendClientAreaTitleBarHeightHint to decoration TitleBarHeight
                 var decorations = TopLevelHost.Decorations;
                 if (decorations != null)
@@ -658,10 +653,6 @@ namespace Avalonia.Controls
                     if (hint >= 0)
                         decorations.TitleBarHeightOverride = hint;
                 }
-            }
-            else
-            {
-                TopLevelHost.DisableDecorations();
             }
             
             UpdateDrawnDecorationMargins();
@@ -676,11 +667,14 @@ namespace Avalonia.Controls
             if (TopLevelHost.Decorations == null)
                 return;
 
-            TopLevelHost.EnableDecorations(ComputeDecorationParts());
+            TopLevelHost.UpdateDrawnDecorations(ComputeDecorationParts(), WindowState);
         }
 
-        private Chrome.DrawnWindowDecorationParts ComputeDecorationParts()
+        private Chrome.DrawnWindowDecorationParts? ComputeDecorationParts()
         {
+            if (!(PlatformImpl?.NeedsManagedDecorations ?? false))
+                return null;
+
             var platformNeeds = PlatformImpl?.RequestedDrawnDecorations ?? PlatformRequestedDrawnDecoration.None;
             var parts = Chrome.DrawnWindowDecorationParts.None;
             if (WindowDecorations != WindowDecorations.None)
@@ -897,6 +891,8 @@ namespace Avalonia.Controls
                 
                 _shown = true;
                 IsVisible = true;
+
+                SetEffectiveIcon(Icon);
 
                 // If window position was not set before then platform may provide incorrect scaling at this time,
                 // but we need it for proper calculation of position and in some cases size (size to content)
@@ -1384,7 +1380,7 @@ namespace Avalonia.Controls
 
         private static WindowIcon? LoadDefaultIcon()
         {
-            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader. 
+            // Use AvaloniaLocator instead of static AssetLoader, so it won't fail on Unit Tests without any asset loader.
             if (AvaloniaLocator.Current.GetService<IAssetLoader>() is { } assetLoader
                 && Assembly.GetEntryAssembly()?.GetName()?.Name is { } assemblyName
                 && Uri.TryCreate($"avares://{assemblyName}/!__AvaloniaDefaultWindowIcon", UriKind.Absolute, out var path)
@@ -1394,6 +1390,12 @@ namespace Avalonia.Controls
                 return new WindowIcon(stream);
             }
             return null;
+        }
+
+        private void SetEffectiveIcon(WindowIcon? icon)
+        {
+            icon ??= _shown ? s_defaultIcon.Value : null;
+            PlatformImpl?.SetIcon(icon?.PlatformImpl);
         }
 
         private static bool CoerceCanMaximize(AvaloniaObject target, bool value)
