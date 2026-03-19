@@ -11,12 +11,12 @@ public partial class Visual
 {
     internal CompositionDrawListVisual? CompositionVisual { get; private set; }
     internal CompositionVisual? ChildCompositionVisual { get; set; }
-    
-    
+
+
     private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
         => new CompositionDrawListVisual(compositor,
             new ServerCompositionDrawListVisual(compositor.Server, this), this);
-        
+
     internal CompositionVisual AttachToCompositor(Compositor compositor)
     {
         if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
@@ -33,7 +33,7 @@ public partial class Visual
         {
             if (ChildCompositionVisual != null)
                 CompositionVisual.Children.Remove(ChildCompositionVisual);
-                
+
             CompositionVisual.DrawList = null;
             CompositionVisual.OpacityMask = null;
             CompositionVisual = null;
@@ -42,18 +42,18 @@ public partial class Visual
 
     internal virtual void SynchronizeCompositionChildVisuals()
     {
-        if(CompositionVisual == null)
+        if (CompositionVisual == null)
             return;
         var compositionChildren = CompositionVisual.Children;
         var visualChildren = (AvaloniaList<Visual>)VisualChildren;
-        
+
         PooledList<(Visual visual, int index)>? sortedChildren = null;
         if (HasNonUniformZIndexChildren && visualChildren.Count > 1)
         {
-            sortedChildren = new (visualChildren.Count);
-            for (var c = 0; c < visualChildren.Count; c++) 
+            sortedChildren = new(visualChildren.Count);
+            for (var c = 0; c < visualChildren.Count; c++)
                 sortedChildren.Add((visualChildren[c], c));
-            
+
             // Regular Array.Sort is unstable, we need to provide indices as well to avoid reshuffling elements.
             sortedChildren.Sort(static (lhs, rhs) =>
             {
@@ -61,17 +61,17 @@ public partial class Visual
                 return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
             });
         }
-        
+
         var childVisual = ChildCompositionVisual;
-        
+
         // Check if the current visual somehow got migrated to another compositor
         if (childVisual != null && childVisual.Compositor != CompositionVisual.Compositor)
             childVisual = null;
-        
+
         var expectedCount = visualChildren.Count;
         if (childVisual != null)
             expectedCount++;
-        
+
         if (compositionChildren.Count == expectedCount)
         {
             bool mismatch = false;
@@ -102,7 +102,7 @@ public partial class Visual
                 return;
             }
         }
-        
+
         compositionChildren.Clear();
         if (sortedChildren != null)
         {
@@ -126,21 +126,22 @@ public partial class Visual
             compositionChildren.Add(childVisual);
     }
 
+
     internal virtual void SynchronizeCompositionProperties()
     {
-        if(CompositionVisual == null)
+        if (CompositionVisual == null)
             return;
         var comp = CompositionVisual;
-        
+
         // TODO: Introduce a dirty mask like WPF has, so we don't overwrite properties every time
-        
-        comp.Offset = new (Bounds.Left, Bounds.Top, 0);
-        comp.Size = new (Bounds.Width, Bounds.Height);
+
+        comp.Offset = new(Bounds.Left, Bounds.Top, 0);
+        comp.Size = new(Bounds.Width, Bounds.Height);
         comp.Visible = IsVisible;
         comp.Opacity = (float)Opacity;
         comp.ClipToBounds = ClipToBounds;
         comp.Clip = Clip?.PlatformImpl;
-        
+
         if (!Equals(comp.OpacityMask, OpacityMask))
             comp.OpacityMask = OpacityMask;
 
@@ -156,7 +157,7 @@ public partial class Visual
 
         var renderTransform = Matrix.Identity;
 
-        if (HasMirrorTransform) 
+        if (HasMirrorTransform)
             renderTransform = new Matrix(-1.0, 0.0, 0.0, 1.0, Bounds.Width, 0);
 
         if (RenderTransform != null)
