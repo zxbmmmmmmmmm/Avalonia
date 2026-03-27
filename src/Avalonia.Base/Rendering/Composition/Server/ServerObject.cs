@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Avalonia.Rendering.Composition.Animations;
@@ -71,7 +72,7 @@ namespace Avalonia.Rendering.Composition.Server
         ExpressionVariant IExpressionObject.GetProperty(string name)
         {
             if (_animations == null)
-                return CompositionProperty.Find(this.GetType(), name)?.GetVariant?.Invoke(this) ?? default;
+                return GetCompositionProperty(name)?.GetVariant?.Invoke(this) ?? default;
 
             return _animations.GetPropertyForAnimation(name);
         }

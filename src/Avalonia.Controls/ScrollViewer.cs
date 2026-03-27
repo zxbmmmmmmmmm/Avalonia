@@ -148,6 +148,31 @@ namespace Avalonia.Controls
                 nameof(IsDeferredScrollingEnabled));
 
         /// <summary>
+        /// Defines the <see cref="MinZoomFactor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> MinZoomFactorProperty =
+            AvaloniaProperty.Register<ScrollViewer, double>(nameof(MinZoomFactor), 0.1);
+
+        /// <summary>
+        /// Defines the <see cref="MaxZoomFactor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> MaxZoomFactorProperty =
+            AvaloniaProperty.Register<ScrollViewer, double>(nameof(MaxZoomFactor), 10.0);
+
+        /// <summary>
+        /// Defines the <see cref="ZoomFactor"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> ZoomFactorProperty =
+            AvaloniaProperty.Register<ScrollViewer, double>(nameof(ZoomFactor), 1.0);
+
+        /// <summary>
+        /// Defines the <see cref="IsZoomEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsZoomEnabledProperty =
+            AvaloniaProperty.Register<ScrollViewer, bool>(nameof(IsZoomEnabled), false);
+
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -389,6 +414,43 @@ namespace Avalonia.Controls
             get => GetValue(IsDeferredScrollingEnabledProperty);
             set => SetValue(IsDeferredScrollingEnabledProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets the minimum zoom factor.
+        /// </summary>
+        public double MinZoomFactor
+        {
+            get => GetValue(MinZoomFactorProperty);
+            set => SetValue(MinZoomFactorProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum zoom factor.
+        /// </summary>
+        public double MaxZoomFactor
+        {
+            get => GetValue(MaxZoomFactorProperty);
+            set => SetValue(MaxZoomFactorProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the current zoom factor.
+        /// </summary>
+        public double ZoomFactor
+        {
+            get => GetValue(ZoomFactorProperty);
+            set => SetValue(ZoomFactorProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether zooming is enabled.
+        /// </summary>
+        public bool IsZoomEnabled
+        {
+            get => GetValue(IsZoomEnabledProperty);
+            set => SetValue(IsZoomEnabledProperty, value);
+        }
+
 
         /// <summary>
         /// Scrolls the content up one line.

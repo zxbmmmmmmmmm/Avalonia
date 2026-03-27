@@ -12,13 +12,10 @@ class ServerObjectAnimations
     private readonly ServerObject _owner;
     private InlineDictionary<CompositionProperty, ServerObjectSubscriptionStore> _subscriptions;
     private InlineDictionary<CompositionProperty, ServerObjectAnimationInstance> _animations;
-    private readonly IReadOnlyDictionary<string, CompositionProperty> _properties;
 
     public ServerObjectAnimations(ServerObject owner)
     {
         _owner = owner;
-        _properties = CompositionProperty.TryGetPropertiesForType(owner.GetType()) ??
-                      new Dictionary<string, CompositionProperty>();
     }
 
     private class ServerObjectSubscriptionStore
@@ -36,7 +33,8 @@ class ServerObjectAnimations
                     sub.Key.Invalidate();
         }
     }
-    
+
+
     abstract class ServerObjectAnimationInstance
     {
         public ServerObjectAnimations Owner { get; }
@@ -129,7 +127,10 @@ class ServerObjectAnimations
     public void SubscribeToInvalidation(CompositionProperty member, IAnimationInstance animation)
     {
         if (!_subscriptions.TryGetValue(member, out var store))
+        {
             _subscriptions[member] = store = new ServerObjectSubscriptionStore();
+            store.IsValid = true;
+        }
         if (store.Subscribers == null)
             store.Subscribers = new();
         store.Subscribers.AddRef(animation);
@@ -143,7 +144,8 @@ class ServerObjectAnimations
     
     public ExpressionVariant GetPropertyForAnimation(string name)
     {
-        if (!_properties.TryGetValue(name, out var prop))
+        var prop = _owner.GetCompositionProperty(name);
+        if (prop is null)
             return default;
 
         if (_subscriptions.TryGetValue(prop, out var subs))
@@ -153,6 +155,10 @@ class ServerObjectAnimations
             return animation.GetVariant();
 
         return prop.GetVariant?.Invoke(_owner) ?? default;
+    }
+    public bool HasAnimationForProperty(CompositionProperty property)
+    {
+        return _animations.TryGetValue(property, out _);
     }
 
     public void EvaluateAnimations()
